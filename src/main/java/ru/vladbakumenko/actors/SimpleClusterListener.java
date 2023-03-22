@@ -1,4 +1,4 @@
-package ru.vladbakumenko.claster;
+package ru.vladbakumenko.actors;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
@@ -16,6 +16,8 @@ import ru.vladbakumenko.model.ChatMessage;
 public class SimpleClusterListener extends AbstractActor {
     LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     Cluster cluster = Cluster.get(getContext().getSystem());
+
+    Props props = Props.create(MessageSender.class);
 
     // subscribe to cluster changes
     @Override
@@ -55,19 +57,19 @@ public class SimpleClusterListener extends AbstractActor {
                         MemberEvent.class,
                         message -> {
                             // ignore
-                            System.out.println(message.member().upNumber());
-                            log.info("EVENT IS HAPPENED!");
+//                            System.out.println(message.member().upNumber());
+//                            log.info("EVENT IS HAPPENED!");
                         })
                 .match(
                         ChatMessage.class,
                         message -> {
-                            log.info(message.getValue());
+                            System.out.println(message.getValue());
                         }
                 )
                 .build();
     }
 
     private void register(Member member) {
-        getSelf().tell(member, getContext().actorOf(Props.create(MessageSender.class)));
+        getSelf().tell(member, getContext().actorOf(props));
     }
 }

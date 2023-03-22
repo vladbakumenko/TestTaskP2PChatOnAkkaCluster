@@ -1,4 +1,4 @@
-package ru.vladbakumenko.claster;
+package ru.vladbakumenko.actors;
 
 import akka.actor.AbstractActor;
 import akka.cluster.Member;
