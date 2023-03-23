@@ -15,7 +15,7 @@ public class App {
 
         ActorRef simpleClusterListener = system.actorOf(Props.create(SimpleClusterListener.class));
 
-        ChatMessage message = new ChatMessage("Hello from port 2553!" + "\n");
+        ChatMessage message = new ChatMessage("Hello from port 2551!" + "\n");
 
         simpleClusterListener.tell(message, system.actorSelection(simpleClusterListener.path()).anchor());
 
