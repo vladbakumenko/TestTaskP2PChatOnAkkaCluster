@@ -1,6 +1,7 @@
 package ru.vladbakumenko.actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
@@ -13,11 +14,18 @@ import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import ru.vladbakumenko.model.ChatMessage;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+
 public class SimpleClusterListener extends AbstractActor {
     LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     Cluster cluster = Cluster.get(getContext().getSystem());
 
-    Props props = Props.create(MessageSender.class);
+    ActorRef messageSender;
+
+    private List<Member> members = new ArrayList<>();
 
     // subscribe to cluster changes
     @Override
@@ -26,6 +34,7 @@ public class SimpleClusterListener extends AbstractActor {
         cluster.subscribe(
                 getSelf(), ClusterEvent.initialStateAsEvents(), MemberEvent.class, UnreachableMember.class);
         // #subscribe
+        messageSender = context().actorOf(Props.create(MessageSender.class));
     }
 
     // re-subscribe when restart
@@ -40,7 +49,7 @@ public class SimpleClusterListener extends AbstractActor {
                 .match(
                         MemberUp.class,
                         mUp -> {
-                            register(mUp.member());
+                            members.add(mUp.member());
                             log.info("Member is Up: {}", mUp.member());
                         })
                 .match(
@@ -63,13 +72,16 @@ public class SimpleClusterListener extends AbstractActor {
                 .match(
                         ChatMessage.class,
                         message -> {
-                            System.out.println(message.getValue());
+                            if (members.isEmpty()) {
+                                getContext().system().scheduler().scheduleOnce(Duration.of(1, ChronoUnit.SECONDS),
+                                        getSelf(), message, getContext().getDispatcher(), getSelf());
+                            }
+                            for (Member member : members) {
+                                context().actorSelection(member.address().toString()).tell(message, getSelf());
+                                System.out.println(message.getValue());
+                            }
                         }
                 )
                 .build();
-    }
-
-    private void register(Member member) {
-        getSelf().tell(member, getContext().actorOf(props));
     }
 }
