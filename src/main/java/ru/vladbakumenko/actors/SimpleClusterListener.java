@@ -1,8 +1,6 @@
 package ru.vladbakumenko.actors;
 
 import akka.actor.AbstractActor;
-import akka.actor.ActorRef;
-import akka.actor.Props;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
 import akka.cluster.ClusterEvent.MemberEvent;
@@ -23,8 +21,6 @@ public class SimpleClusterListener extends AbstractActor {
     LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     Cluster cluster = Cluster.get(getContext().getSystem());
 
-    ActorRef messageSender;
-
     private List<Member> members = new ArrayList<>();
 
     // subscribe to cluster changes
@@ -34,7 +30,6 @@ public class SimpleClusterListener extends AbstractActor {
         cluster.subscribe(
                 getSelf(), ClusterEvent.initialStateAsEvents(), MemberEvent.class, UnreachableMember.class);
         // #subscribe
-        messageSender = context().actorOf(Props.create(MessageSender.class));
     }
 
     // re-subscribe when restart
@@ -66,8 +61,6 @@ public class SimpleClusterListener extends AbstractActor {
                         MemberEvent.class,
                         message -> {
                             // ignore
-//                            System.out.println(message.member().upNumber());
-//                            log.info("EVENT IS HAPPENED!");
                         })
                 .match(
                         ChatMessage.class,
