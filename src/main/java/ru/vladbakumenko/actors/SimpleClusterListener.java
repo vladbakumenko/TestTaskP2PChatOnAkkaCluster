@@ -34,7 +34,6 @@ public class SimpleClusterListener extends AbstractActor {
         cluster.subscribe(
                 getSelf(), ClusterEvent.initialStateAsEvents(), MemberEvent.class, UnreachableMember.class);
         // #subscribe
-        messageSender = context().actorOf(Props.create(MessageSender.class));
     }
 
     // re-subscribe when restart
@@ -77,8 +76,7 @@ public class SimpleClusterListener extends AbstractActor {
                                         getSelf(), message, getContext().getDispatcher(), getSelf());
                             }
                             for (Member member : members) {
-                                context().actorSelection(member.address().toString()).tell(message, getSelf());
-                                System.out.println(message.getValue());
+                                context().actorSelection(member.address() + "/user/listener").tell(new ChatMessage("Hello message from " + cluster.selfUniqueAddress().toString()), getSelf());
                             }
                         }
                 )

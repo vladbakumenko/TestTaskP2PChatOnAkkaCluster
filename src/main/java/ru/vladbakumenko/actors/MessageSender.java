@@ -14,7 +14,7 @@ public class MessageSender extends AbstractActor {
         return receiveBuilder()
                 .match(ChatMessage.class,
                         message -> {
-                            System.out.println(message.getValue());
+                            getContext().getSystem().log().info(message.getValue());
                         }
                 )
                 .build();
