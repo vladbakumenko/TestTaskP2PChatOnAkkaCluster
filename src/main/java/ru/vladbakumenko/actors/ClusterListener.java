@@ -17,7 +17,7 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SimpleClusterListener extends AbstractActor {
+public class ClusterListener extends AbstractActor {
     LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     Cluster cluster = Cluster.get(getContext().getSystem());
 
@@ -71,7 +71,7 @@ public class SimpleClusterListener extends AbstractActor {
                             }
                             for (Member member : members) {
                                 context().actorSelection(member.address() + "/user/listener")
-                                        .tell(new ChatMessage(message.getValue() + "from: "
+                                        .tell(new ChatMessage(message.getValue() + " from: "
                                                 + cluster.selfUniqueAddress().toString()), getSelf());
                             }
                         }
