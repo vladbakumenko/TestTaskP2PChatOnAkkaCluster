@@ -22,11 +22,11 @@ public class MessageListener extends AbstractActor {
                             textArea.appendText(message.getValue() + "\n");
                         }
                 )
+
                 .build();
     }
 
     public static Props getProps(TextArea textArea) {
         return Props.create(MessageListener.class, textArea);
     }
-
 }

@@ -1,13 +1,12 @@
 package ru.vladbakumenko.actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.Address;
 import akka.cluster.Cluster;
-import akka.cluster.ClusterEvent;
 import akka.cluster.ClusterEvent.MemberEvent;
 import akka.cluster.ClusterEvent.MemberRemoved;
 import akka.cluster.ClusterEvent.MemberUp;
 import akka.cluster.ClusterEvent.UnreachableMember;
-import akka.cluster.Member;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import ru.vladbakumenko.model.ChatMessage;
@@ -21,14 +20,15 @@ public class ClusterListener extends AbstractActor {
     LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     Cluster cluster = Cluster.get(getContext().getSystem());
 
-    private List<Member> members = new ArrayList<>();
+    private List<Address> members = new ArrayList<>();
 
     // subscribe to cluster changes
     @Override
     public void preStart() {
         // #subscribe
-        cluster.subscribe(
-                getSelf(), ClusterEvent.initialStateAsEvents(), MemberEvent.class, UnreachableMember.class);
+//        cluster.subscribe(
+//                getSelf(), ClusterEvent.initialStateAsEvents(), MemberEvent.class, UnreachableMember.class);
+        cluster.subscribe(getSelf(), MemberUp.class);
         // #subscribe
     }
 
@@ -44,7 +44,7 @@ public class ClusterListener extends AbstractActor {
                 .match(
                         MemberUp.class,
                         mUp -> {
-                            members.add(mUp.member());
+//                            members.add(mUp.member());
                             log.info("Member is Up: {}", mUp.member());
                         })
                 .match(
@@ -69,13 +69,18 @@ public class ClusterListener extends AbstractActor {
                                 getContext().system().scheduler().scheduleOnce(Duration.of(1, ChronoUnit.SECONDS),
                                         getSelf(), message, getContext().getDispatcher(), getSelf());
                             }
-                            for (Member member : members) {
-                                context().actorSelection(member.address() + "/user/listener")
+                            for (Address member : members) {
+                                context().actorSelection(member + "/user/listener")
                                         .tell(new ChatMessage(message.getValue() + " from: "
                                                 + cluster.selfUniqueAddress().toString()), getSelf());
                             }
                         }
                 )
+                .match(Address.class,
+                        address -> {
+                            members.add(address);
+                            cluster.joinSeedNodes(members);
+                        })
                 .build();
     }
 }
