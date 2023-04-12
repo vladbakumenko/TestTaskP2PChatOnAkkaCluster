@@ -22,7 +22,6 @@ public class MessageListener extends AbstractActor {
                             textArea.appendText(message.getValue() + "\n");
                         }
                 )
-
                 .build();
     }
 

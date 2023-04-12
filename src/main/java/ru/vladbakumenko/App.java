@@ -4,6 +4,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Address;
 import akka.actor.Props;
+import akka.cluster.Cluster;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -14,19 +15,15 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import ru.vladbakumenko.actors.ClusterListener;
 import ru.vladbakumenko.actors.MessageListener;
-import ru.vladbakumenko.actors.UserActor;
 import ru.vladbakumenko.model.ChatMessage;
 
 public class App extends Application {
-
-    private final String username = "user-" + System.currentTimeMillis();
     private ActorSystem system;
     private ActorRef clusterListener;
-    private ActorRef messageListener;
-    private ActorRef userActor;
 
     public static void main(String[] args) {
         launch(args);
@@ -57,7 +54,7 @@ public class App extends Application {
                 host[0] = hostField.getText();
                 port[0] = portField.getText();
 
-                if(host[0].isBlank()) {
+                if (host[0].isBlank()) {
                     logArea.appendText("Не введён адрес хоста" + "\n");
                 }
                 if (port[0].isBlank()) {
@@ -66,7 +63,7 @@ public class App extends Application {
 
                 Address address = new Address("akka", "ClusterSystem", host[0], Integer.parseInt(port[0]));
 
-                clusterListener.tell(address, clusterListener);
+                clusterListener.tell(address, ActorRef.noSender());
             }
         });
 
@@ -79,28 +76,29 @@ public class App extends Application {
                 if (keyEvent.getCode() == KeyCode.ENTER) {
                     String text = messageField.getText();
                     ChatMessage message = new ChatMessage(text);
-                    clusterListener.tell(message, messageListener);
+                    clusterListener.tell(message, ActorRef.noSender());
                     messageField.setText("");
                 }
             }
         });
 
-        BorderPane pane1 = new BorderPane();
-        pane1.setTop(hostField);
-        pane1.setCenter(portField);
-        pane1.setBottom(button);
+        VBox pane1 = new VBox();
+        pane1.getChildren().add(hostField);
+        pane1.getChildren().add(portField);
+        pane1.getChildren().add(button);
 
         BorderPane pane2 = new BorderPane();
         pane2.setTop(pane1);
         pane2.setCenter(logArea);
         pane2.setBottom(messageField);
 
-        stage.setScene(new Scene(pane2, 400, 300));
-        stage.show();
-
         system = ActorSystem.create("ClusterSystem");
         clusterListener = system.actorOf(Props.create(ClusterListener.class));
-        messageListener = system.actorOf(MessageListener.getProps(logArea), "listener");
-        userActor = system.actorOf(UserActor.props(username));
+        system.actorOf(MessageListener.getProps(logArea), "listener");
+
+        stage.setScene(new Scene(pane2, 450, 500));
+        stage.setTitle("Твой хост: " + Cluster.get(system).readView().selfAddress().host().get() +
+                " и порт: " + Cluster.get(system).readView().selfAddress().port().get());
+        stage.show();
     }
 }
