@@ -1,6 +1,7 @@
 package ru.vladbakumenko.actors;
 
 import akka.actor.AbstractActor;
+import akka.actor.Address;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
 import akka.cluster.ClusterEvent.MemberEvent;
@@ -11,17 +12,13 @@ import akka.cluster.Member;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import ru.vladbakumenko.model.ChatMessage;
+import scala.collection.JavaConverters;
 
-import java.time.Duration;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 public class ClusterListener extends AbstractActor {
     LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     Cluster cluster = Cluster.get(getContext().getSystem());
-
-    private List<Member> members = new ArrayList<>();
 
     // subscribe to cluster changes
     @Override
@@ -29,7 +26,6 @@ public class ClusterListener extends AbstractActor {
         // #subscribe
         cluster.subscribe(
                 getSelf(), ClusterEvent.initialStateAsEvents(), MemberEvent.class, UnreachableMember.class);
-        // #subscribe
     }
 
     // re-subscribe when restart
@@ -44,7 +40,6 @@ public class ClusterListener extends AbstractActor {
                 .match(
                         MemberUp.class,
                         mUp -> {
-                            members.add(mUp.member());
                             log.info("Member is Up: {}", mUp.member());
                         })
                 .match(
@@ -65,17 +60,18 @@ public class ClusterListener extends AbstractActor {
                 .match(
                         ChatMessage.class,
                         message -> {
-                            if (members.isEmpty()) {
-                                getContext().system().scheduler().scheduleOnce(Duration.of(1, ChronoUnit.SECONDS),
-                                        getSelf(), message, getContext().getDispatcher(), getSelf());
-                            }
+                            Set<Member> members = JavaConverters.setAsJavaSet(cluster.readView().members());
+
                             for (Member member : members) {
                                 context().actorSelection(member.address() + "/user/listener")
-                                        .tell(new ChatMessage(message.getValue() + " from: "
-                                                + cluster.selfUniqueAddress().toString()), getSelf());
+                                        .tell(message, getSelf());
                             }
                         }
                 )
+                .match(Address.class,
+                        address -> {
+                            cluster.join(address);
+                        })
                 .build();
     }
 }

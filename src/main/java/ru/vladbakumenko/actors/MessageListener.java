@@ -19,7 +19,7 @@ public class MessageListener extends AbstractActor {
                 .match(ChatMessage.class,
                         message -> {
                             getContext().getSystem().log().info(message.getValue());
-                            textArea.appendText(message.getValue() + "\n");
+                            textArea.appendText(message.getUsername() + ": " + message.getValue() + "\n");
                         }
                 )
                 .build();
@@ -28,5 +28,4 @@ public class MessageListener extends AbstractActor {
     public static Props getProps(TextArea textArea) {
         return Props.create(MessageListener.class, textArea);
     }
-
 }
