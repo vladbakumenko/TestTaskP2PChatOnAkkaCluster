@@ -22,6 +22,8 @@ import ru.vladbakumenko.actors.MessageListener;
 import ru.vladbakumenko.model.ChatMessage;
 
 public class App extends Application {
+
+    private String username = "username-" + System.currentTimeMillis();
     private ActorSystem system;
     private ActorRef clusterListener;
 
@@ -45,6 +47,11 @@ public class App extends Application {
         portField.setPromptText("Введи номер порта");
         final String[] port = {""};
 
+        //nickname select
+        TextField nicknameField = new TextField();
+        nicknameField.setPromptText("Введи свой никнейм");
+        final String[] nickname = {""};
+
         //button for connect
         Button button = new Button("Подключиться");
 
@@ -53,12 +60,16 @@ public class App extends Application {
             public void handle(ActionEvent actionEvent) {
                 host[0] = hostField.getText();
                 port[0] = portField.getText();
+                nickname[0] = nicknameField.getText();
 
                 if (host[0].isBlank()) {
                     logArea.appendText("Не введён адрес хоста" + "\n");
                 }
                 if (port[0].isBlank()) {
                     logArea.appendText("Не введён адреспорта" + "\n");
+                }
+                if (!nickname[0].isBlank()) {
+                    username = nickname[0];
                 }
 
                 Address address = new Address("akka", "ClusterSystem", host[0], Integer.parseInt(port[0]));
@@ -75,28 +86,26 @@ public class App extends Application {
             public void handle(KeyEvent keyEvent) {
                 if (keyEvent.getCode() == KeyCode.ENTER) {
                     String text = messageField.getText();
-                    ChatMessage message = new ChatMessage(text);
+                    ChatMessage message = new ChatMessage(username, text);
                     clusterListener.tell(message, ActorRef.noSender());
                     messageField.setText("");
                 }
             }
         });
 
-        VBox pane1 = new VBox();
-        pane1.getChildren().add(hostField);
-        pane1.getChildren().add(portField);
-        pane1.getChildren().add(button);
+        VBox connectionPane = new VBox();
+        connectionPane.getChildren().addAll(hostField, portField, nicknameField, button);
 
-        BorderPane pane2 = new BorderPane();
-        pane2.setTop(pane1);
-        pane2.setCenter(logArea);
-        pane2.setBottom(messageField);
+        BorderPane mainPane = new BorderPane();
+        mainPane.setTop(connectionPane);
+        mainPane.setCenter(logArea);
+        mainPane.setBottom(messageField);
 
         system = ActorSystem.create("ClusterSystem");
         clusterListener = system.actorOf(Props.create(ClusterListener.class));
         system.actorOf(MessageListener.getProps(logArea), "listener");
 
-        stage.setScene(new Scene(pane2, 450, 500));
+        stage.setScene(new Scene(mainPane, 450, 500));
         stage.setTitle("Твой хост: " + Cluster.get(system).readView().selfAddress().host().get() +
                 " и порт: " + Cluster.get(system).readView().selfAddress().port().get());
         stage.show();

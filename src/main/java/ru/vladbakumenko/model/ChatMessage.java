@@ -7,5 +7,6 @@ import scala.Serializable;
 @Data
 @AllArgsConstructor
 public class ChatMessage implements Serializable {
+    private String username;
     private String value;
 }

@@ -64,8 +64,7 @@ public class ClusterListener extends AbstractActor {
 
                             for (Member member : members) {
                                 context().actorSelection(member.address() + "/user/listener")
-                                        .tell(new ChatMessage(message.getValue() + " from: "
-                                                + cluster.selfUniqueAddress().toString()), getSelf());
+                                        .tell(message, getSelf());
                             }
                         }
                 )
