@@ -17,8 +17,8 @@ import scala.collection.JavaConverters;
 import java.util.Set;
 
 public class ClusterListener extends AbstractActor {
-    LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
-    Cluster cluster = Cluster.get(getContext().getSystem());
+    private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
+    private Cluster cluster = Cluster.get(getContext().getSystem());
 
     // subscribe to cluster changes
     @Override

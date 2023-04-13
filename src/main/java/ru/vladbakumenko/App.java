@@ -6,6 +6,9 @@ import akka.actor.Address;
 import akka.actor.Props;
 import akka.cluster.Cluster;
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
@@ -17,6 +20,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import ru.vladbakumenko.actors.ClusterListener;
 import ru.vladbakumenko.actors.MessageListener;
 import ru.vladbakumenko.model.ChatMessage;
@@ -26,6 +30,7 @@ public class App extends Application {
     private String username = "username-" + System.currentTimeMillis();
     private ActorSystem system;
     private ActorRef clusterListener;
+    private ObservableList<ChatMessage> listViewData = FXCollections.observableArrayList();
 
     public static void main(String[] args) {
         launch(args);
@@ -68,7 +73,7 @@ public class App extends Application {
                 if (port[0].isBlank()) {
                     logArea.appendText("Не введён адреспорта" + "\n");
                 }
-                if (!nickname[0].isBlank()) {
+                if (nickname[0] != null && !nickname[0].isBlank()) {
                     username = nickname[0];
                 }
 
@@ -85,11 +90,21 @@ public class App extends Application {
             @Override
             public void handle(KeyEvent keyEvent) {
                 if (keyEvent.getCode() == KeyCode.ENTER) {
+                    listViewData.removeAll();
                     String text = messageField.getText();
                     ChatMessage message = new ChatMessage(username, text);
                     clusterListener.tell(message, ActorRef.noSender());
                     messageField.setText("");
                 }
+            }
+        });
+
+        listViewData.addListener(new ListChangeListener<ChatMessage>() {
+            @Override
+            public void onChanged(Change<? extends ChatMessage> change) {
+                ChatMessage message = change.getList().get(0);
+                logArea.appendText(message.getUsername() + ": " + message.getValue() + "\n");
+                listViewData.remove(0);
             }
         });
 
@@ -103,11 +118,17 @@ public class App extends Application {
 
         system = ActorSystem.create("ClusterSystem");
         clusterListener = system.actorOf(Props.create(ClusterListener.class));
-        system.actorOf(MessageListener.getProps(logArea), "listener");
+        system.actorOf(MessageListener.getProps(listViewData), "listener");
 
         stage.setScene(new Scene(mainPane, 450, 500));
         stage.setTitle("Твой хост: " + Cluster.get(system).readView().selfAddress().host().get() +
                 " и порт: " + Cluster.get(system).readView().selfAddress().port().get());
         stage.show();
+
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                system.terminate();
+            }
+        });
     }
 }
