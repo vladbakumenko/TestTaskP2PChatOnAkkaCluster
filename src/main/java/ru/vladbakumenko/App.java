@@ -6,10 +6,15 @@ import akka.actor.Address;
 import akka.actor.Props;
 import akka.cluster.Cluster;
 import javafx.application.Application;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -22,17 +27,13 @@ import ru.vladbakumenko.actors.ClusterListener;
 import ru.vladbakumenko.actors.MessageListener;
 import ru.vladbakumenko.model.ChatMessage;
 
-import java.util.ArrayDeque;
-import java.util.LinkedList;
-import java.util.Queue;
-
 public class App extends Application {
 
     private String username = "username-" + System.currentTimeMillis();
     private ActorSystem system;
     private ActorRef clusterListener;
-
-    private Queue<ChatMessage> queue = new ArrayDeque<>();
+    private ObservableList<ChatMessage> listViewData = FXCollections.observableArrayList();
+    private ListView<ChatMessage> listView = new ListView<>();
 
     public static void main(String[] args) {
         launch(args);
@@ -40,6 +41,7 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
+
         //console
         TextArea logArea = new TextArea();
         logArea.setEditable(true);
@@ -95,12 +97,19 @@ public class App extends Application {
                     String text = messageField.getText();
                     ChatMessage message = new ChatMessage(username, text);
                     clusterListener.tell(message, ActorRef.noSender());
-                    ChatMessage result = queue.poll();
-                    if (result != null) {
-                        logArea.appendText(result.getUsername() + ": " + result.getValue() + "\n");
-                    }
                     messageField.setText("");
                 }
+            }
+        });
+
+
+        listView.setItems(listViewData);
+        listView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ChatMessage>() {
+            @Override
+            public void changed(ObservableValue<? extends ChatMessage> observable,
+                                ChatMessage oldMessage, ChatMessage newMessage) {
+                System.out.println(observable.getValue());
+                logArea.appendText(newMessage.getUsername() + ": " + newMessage.getValue() + "\n");
             }
         });
 
@@ -114,7 +123,7 @@ public class App extends Application {
 
         system = ActorSystem.create("ClusterSystem");
         clusterListener = system.actorOf(Props.create(ClusterListener.class));
-        system.actorOf(MessageListener.getProps(queue), "listener");
+        system.actorOf(MessageListener.getProps(listViewData), "listener");
 
         stage.setScene(new Scene(mainPane, 450, 500));
         stage.setTitle("Твой хост: " + Cluster.get(system).readView().selfAddress().host().get() +
