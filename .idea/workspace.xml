@@ -9,7 +9,6 @@
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/MessageListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/MessageListener.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChatMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChatMessage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -108,7 +107,9 @@
       <workItem from="1679912939270" duration="2422000" />
       <workItem from="1679979965038" duration="602000" />
       <workItem from="1680070053399" duration="9674000" />
-      <workItem from="1681250676047" duration="2632000" />
+      <workItem from="1681250676047" duration="3879000" />
+      <workItem from="1681328041924" duration="5174000" />
+      <workItem from="1681372140354" duration="305000" />
     </task>
     <servers />
   </component>
@@ -145,6 +146,22 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java</url>
+          <line>97</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/MessageListener.java</url>
+          <line>23</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

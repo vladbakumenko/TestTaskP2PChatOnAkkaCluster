@@ -5,12 +5,15 @@ import akka.actor.Props;
 import javafx.scene.control.TextArea;
 import ru.vladbakumenko.model.ChatMessage;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class MessageListener extends AbstractActor {
 
-    private final TextArea textArea;
+    private Queue<ChatMessage> queue;
 
-    public MessageListener(TextArea textArea) {
-        this.textArea = textArea;
+    public MessageListener(Queue<ChatMessage> queue) {
+        this.queue = queue;
     }
 
     @Override
@@ -19,13 +22,13 @@ public class MessageListener extends AbstractActor {
                 .match(ChatMessage.class,
                         message -> {
                             getContext().getSystem().log().info(message.getValue());
-                            textArea.appendText(message.getUsername() + ": " + message.getValue() + "\n");
+                            queue.add(message);
                         }
                 )
                 .build();
     }
 
-    public static Props getProps(TextArea textArea) {
-        return Props.create(MessageListener.class, textArea);
+    public static Props getProps(Queue<ChatMessage> queue) {
+        return Props.create(MessageListener.class, queue);
     }
 }

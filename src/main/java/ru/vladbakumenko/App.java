@@ -17,15 +17,22 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import ru.vladbakumenko.actors.ClusterListener;
 import ru.vladbakumenko.actors.MessageListener;
 import ru.vladbakumenko.model.ChatMessage;
+
+import java.util.ArrayDeque;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class App extends Application {
 
     private String username = "username-" + System.currentTimeMillis();
     private ActorSystem system;
     private ActorRef clusterListener;
+
+    private Queue<ChatMessage> queue = new ArrayDeque<>();
 
     public static void main(String[] args) {
         launch(args);
@@ -68,7 +75,7 @@ public class App extends Application {
                 if (port[0].isBlank()) {
                     logArea.appendText("Не введён адреспорта" + "\n");
                 }
-                if (!nickname[0].isBlank()) {
+                if (nickname[0] != null && !nickname[0].isBlank()) {
                     username = nickname[0];
                 }
 
@@ -88,6 +95,10 @@ public class App extends Application {
                     String text = messageField.getText();
                     ChatMessage message = new ChatMessage(username, text);
                     clusterListener.tell(message, ActorRef.noSender());
+                    ChatMessage result = queue.poll();
+                    if (result != null) {
+                        logArea.appendText(result.getUsername() + ": " + result.getValue() + "\n");
+                    }
                     messageField.setText("");
                 }
             }
@@ -103,11 +114,17 @@ public class App extends Application {
 
         system = ActorSystem.create("ClusterSystem");
         clusterListener = system.actorOf(Props.create(ClusterListener.class));
-        system.actorOf(MessageListener.getProps(logArea), "listener");
+        system.actorOf(MessageListener.getProps(queue), "listener");
 
         stage.setScene(new Scene(mainPane, 450, 500));
         stage.setTitle("Твой хост: " + Cluster.get(system).readView().selfAddress().host().get() +
                 " и порт: " + Cluster.get(system).readView().selfAddress().port().get());
         stage.show();
+
+        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+            public void handle(WindowEvent we) {
+                system.terminate();
+            }
+        });
     }
 }
