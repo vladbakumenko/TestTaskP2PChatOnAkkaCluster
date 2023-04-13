@@ -90,7 +90,6 @@ public class App extends Application {
             @Override
             public void handle(KeyEvent keyEvent) {
                 if (keyEvent.getCode() == KeyCode.ENTER) {
-                    listViewData.removeAll();
                     String text = messageField.getText();
                     ChatMessage message = new ChatMessage(username, text);
                     clusterListener.tell(message, ActorRef.noSender());
