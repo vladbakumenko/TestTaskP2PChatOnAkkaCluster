@@ -6,15 +6,13 @@ import akka.actor.Address;
 import akka.actor.Props;
 import akka.cluster.Cluster;
 import javafx.application.Application;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -33,7 +31,6 @@ public class App extends Application {
     private ActorSystem system;
     private ActorRef clusterListener;
     private ObservableList<ChatMessage> listViewData = FXCollections.observableArrayList();
-    private ListView<ChatMessage> listView = new ListView<>();
 
     public static void main(String[] args) {
         launch(args);
@@ -41,7 +38,6 @@ public class App extends Application {
 
     @Override
     public void start(Stage stage) throws Exception {
-
         //console
         TextArea logArea = new TextArea();
         logArea.setEditable(true);
@@ -94,6 +90,7 @@ public class App extends Application {
             @Override
             public void handle(KeyEvent keyEvent) {
                 if (keyEvent.getCode() == KeyCode.ENTER) {
+                    listViewData.removeAll();
                     String text = messageField.getText();
                     ChatMessage message = new ChatMessage(username, text);
                     clusterListener.tell(message, ActorRef.noSender());
@@ -102,14 +99,12 @@ public class App extends Application {
             }
         });
 
-
-        listView.setItems(listViewData);
-        listView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<ChatMessage>() {
+        listViewData.addListener(new ListChangeListener<ChatMessage>() {
             @Override
-            public void changed(ObservableValue<? extends ChatMessage> observable,
-                                ChatMessage oldMessage, ChatMessage newMessage) {
-                System.out.println(observable.getValue());
-                logArea.appendText(newMessage.getUsername() + ": " + newMessage.getValue() + "\n");
+            public void onChanged(Change<? extends ChatMessage> change) {
+                ChatMessage message = change.getList().get(0);
+                logArea.appendText(message.getUsername() + ": " + message.getValue() + "\n");
+                listViewData.remove(0);
             }
         });
 
