@@ -5,7 +5,6 @@ import akka.actor.Props;
 import ru.vladbakumenko.model.ChatMessage;
 
 import java.util.List;
-import java.util.Queue;
 
 public class MessageListener extends AbstractActor {
 

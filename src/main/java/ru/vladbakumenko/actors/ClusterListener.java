@@ -63,7 +63,8 @@ public class ClusterListener extends AbstractActor {
                             Set<Member> members = JavaConverters.setAsJavaSet(cluster.readView().members());
 
                             for (Member member : members) {
-                                context().actorSelection(member.address() + "/user/listener")
+                                context()
+                                        .actorSelection(member.address() + "/user/listener")
                                         .tell(message, getSelf());
                             }
                         }
