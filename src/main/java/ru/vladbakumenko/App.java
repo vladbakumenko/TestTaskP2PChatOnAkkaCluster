@@ -13,6 +13,7 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -22,15 +23,18 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import ru.vladbakumenko.actors.ClusterListener;
-import ru.vladbakumenko.actors.MessageListener;
+import ru.vladbakumenko.actors.ClusterManager;
 import ru.vladbakumenko.model.ChatMessage;
+import ru.vladbakumenko.model.Connection;
 
 public class App extends Application {
 
     private String username = "username-" + System.currentTimeMillis();
     private ActorSystem system;
     private ActorRef clusterListener;
-    private ObservableList<ChatMessage> listViewData = FXCollections.observableArrayList();
+    private ObservableList<ChatMessage> messages = FXCollections.observableArrayList();
+    private ObservableList<String> members = FXCollections.observableArrayList();
+    private ListView<String> membersView = new ListView<>(FXCollections.observableArrayList(members));
 
     public static void main(String[] args) {
         launch(args);
@@ -41,6 +45,13 @@ public class App extends Application {
         //console
         TextArea logArea = new TextArea();
         logArea.setEditable(true);
+
+        //list-view
+
+        //list of members
+        TextArea membersArea = new TextArea();
+        membersArea.setPrefColumnCount(20);
+        membersArea.setEditable(true);
 
         //host select
         TextField hostField = new TextField();
@@ -71,15 +82,16 @@ public class App extends Application {
                     logArea.appendText("Не введён адрес хоста" + "\n");
                 }
                 if (port[0].isBlank()) {
-                    logArea.appendText("Не введён адреспорта" + "\n");
+                    logArea.appendText("Не введён адрес порта" + "\n");
                 }
                 if (nickname[0] != null && !nickname[0].isBlank()) {
                     username = nickname[0];
                 }
 
                 Address address = new Address("akka", "ClusterSystem", host[0], Integer.parseInt(port[0]));
+                Connection user = new Connection(username, address);
 
-                clusterListener.tell(address, ActorRef.noSender());
+                clusterListener.tell(user, ActorRef.noSender());
             }
         });
 
@@ -98,12 +110,30 @@ public class App extends Application {
             }
         });
 
-        listViewData.addListener(new ListChangeListener<ChatMessage>() {
+        messages.addListener(new ListChangeListener<ChatMessage>() {
             @Override
             public void onChanged(Change<? extends ChatMessage> change) {
                 ChatMessage message = change.getList().get(0);
                 logArea.appendText(message.getUsername() + ": " + message.getValue() + "\n");
-                listViewData.remove(0);
+                messages.remove(0);
+            }
+        });
+
+//        addresses.selectionModelProperty().addListener(new ChangeListener<MultipleSelectionModel<Member>>() {
+//            @Override
+//            public void changed(ObservableValue<? extends MultipleSelectionModel<Member>> observableValue, MultipleSelectionModel<Member> memberMultipleSelectionModel, MultipleSelectionModel<Member> t1) {
+//                addresses.
+//            }
+//        });
+
+        members.addListener(new ListChangeListener<String>() {
+            @Override
+            public void onChanged(Change<? extends String> change) {
+                ObservableList<? extends String> list = change.getList();
+                for (String name : list) {
+                    membersArea.appendText(name + "\n");
+                }
+                members.clear();
             }
         });
 
@@ -111,15 +141,16 @@ public class App extends Application {
         connectionPane.getChildren().addAll(hostField, portField, nicknameField, button);
 
         BorderPane mainPane = new BorderPane();
+        mainPane.setRight(membersArea);
         mainPane.setTop(connectionPane);
         mainPane.setCenter(logArea);
         mainPane.setBottom(messageField);
 
         system = ActorSystem.create("ClusterSystem");
-        clusterListener = system.actorOf(Props.create(ClusterListener.class));
-        system.actorOf(MessageListener.getProps(listViewData), "listener");
+        clusterListener = system.actorOf(Props.create(ClusterListener.class), "listener");
+        system.actorOf(ClusterManager.getProps(messages, members), "manager");
 
-        stage.setScene(new Scene(mainPane, 450, 500));
+        stage.setScene(new Scene(mainPane, 650, 500));
         stage.setTitle("Твой хост: " + Cluster.get(system).readView().selfAddress().host().get() +
                 " и порт: " + Cluster.get(system).readView().selfAddress().port().get());
         stage.show();

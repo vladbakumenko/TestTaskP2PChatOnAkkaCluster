@@ -11,14 +11,18 @@ import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.cluster.Member;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
+import ru.vladbakumenko.model.ChatMembers;
 import ru.vladbakumenko.model.ChatMessage;
+import ru.vladbakumenko.model.Connection;
 import scala.collection.JavaConverters;
 
+import java.util.List;
 import java.util.Set;
 
 public class ClusterListener extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private Cluster cluster = Cluster.get(getContext().getSystem());
+    private ChatMembers chatMembers = new ChatMembers();
 
     // subscribe to cluster changes
     @Override
@@ -40,6 +44,14 @@ public class ClusterListener extends AbstractActor {
                 .match(
                         MemberUp.class,
                         mUp -> {
+//                            Set<Member> members = JavaConverters.setAsJavaSet(cluster.readView().members());
+//                            chatMembers.setMembers(members);
+//                            for (Member member : members) {
+//                                context()
+//                                        .actorSelection(member.address() + "/user/listener")
+//                                        .tell(chatMembers, getSelf());
+//                            }
+
                             log.info("Member is Up: {}", mUp.member());
                         })
                 .match(
@@ -64,15 +76,31 @@ public class ClusterListener extends AbstractActor {
 
                             for (Member member : members) {
                                 context()
-                                        .actorSelection(member.address() + "/user/listener")
+                                        .actorSelection(member.address() + "/user/manager")
                                         .tell(message, getSelf());
                             }
                         }
                 )
-                .match(Address.class,
-                        address -> {
-                            cluster.join(address);
+                .match(Connection.class,
+                        user -> {
+                            cluster.join(user.getAddress());
+                            chatMembers.getMembers().add(user);
+
+                            List<Address> addresses = chatMembers.getMembers().stream()
+                                    .map(Connection::getAddress).toList();
+
+                            for (Address address : addresses) {
+                                context()
+                                        .actorSelection(address + "/user/listener")
+                                        .tell(chatMembers, getSelf());
+                            }
                         })
+                .match(ChatMembers.class,
+                        members -> {
+                            context().actorSelection(getSelf().path().address() + "/user/manager")
+                                    .tell(members, getSelf());
+                        }
+                )
                 .build();
     }
 }
