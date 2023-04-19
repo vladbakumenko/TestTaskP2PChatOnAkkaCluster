@@ -3,7 +3,6 @@ package ru.vladbakumenko;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Address;
-import akka.actor.Props;
 import akka.cluster.Cluster;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
@@ -14,10 +13,14 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
@@ -25,14 +28,21 @@ import ru.vladbakumenko.actors.ClusterListener;
 import ru.vladbakumenko.actors.ClusterManager;
 import ru.vladbakumenko.model.ChatMessage;
 import ru.vladbakumenko.model.Connection;
+import ru.vladbakumenko.model.PrivateMessage;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class App extends Application {
-
     private String username = "username-" + System.currentTimeMillis();
-    private ActorSystem system;
-    private ActorRef clusterListener;
+    private ActorSystem system = ActorSystem.create("ClusterSystem");
+    private Cluster cluster = Cluster.get(system);
+    private ActorRef clusterListener = system.actorOf(ClusterListener.getProps(cluster), "listener");
     private ObservableList<ChatMessage> messages = FXCollections.observableArrayList();
     private ObservableList<String> members = FXCollections.observableArrayList();
+
+    private Map<String, TextArea> privateChatAreas = new HashMap<>();
+    private ActorRef clusterManager = system.actorOf(ClusterManager.getProps(messages, members), "manager");
 
     public static void main(String[] args) {
         launch(args);
@@ -44,9 +54,10 @@ public class App extends Application {
         TextArea logArea = new TextArea();
         logArea.setEditable(true);
 
-        //list-view
-        ListView<String> membersView = new ListView<>();
-        membersView.setItems(members);
+        //list-view and buttons
+        ListView<String> membersView = new ListView<>(members);
+        Button selectPrivateChat = new Button("Приватный чат");
+        Button selectGroupChat = new Button("Общий чат");
 
         //address of member for private chat
         final String[] addressForPrivateChat = {""};
@@ -70,7 +81,8 @@ public class App extends Application {
 
         //nickname select
         TextField nicknameField = new TextField();
-        nicknameField.setPromptText("Введи свой никнейм");
+//        nicknameField.setPromptText("Введи свой никнейм");
+        nicknameField.setText(system.settings().config().getString("akka.remote.artery.canonical.port"));
         final String[] nickname = {""};
 
         //button for connect
@@ -94,8 +106,7 @@ public class App extends Application {
                 }
 
                 Address address = new Address("akka", "ClusterSystem", host[0], Integer.parseInt(port[0]));
-                Connection connection = new Connection(username, address);
-
+                Connection connection = new Connection(username, address, cluster.selfAddress());
                 clusterListener.tell(connection, ActorRef.noSender());
             }
         });
@@ -108,8 +119,14 @@ public class App extends Application {
             public void handle(KeyEvent keyEvent) {
                 if (keyEvent.getCode() == KeyCode.ENTER) {
                     String text = messageField.getText();
-                    ChatMessage message = new ChatMessage(username, text);
-                    clusterListener.tell(message, ActorRef.noSender());
+                    if (addressForPrivateChat[0].isBlank()) {
+                        ChatMessage message = new ChatMessage(username, text);
+                        clusterListener.tell(message, ActorRef.noSender());
+
+                    } else {
+                        PrivateMessage message = new PrivateMessage(username, addressForPrivateChat[0], text);
+                        clusterListener.tell(message, ActorRef.noSender());
+                    }
                     messageField.setText("");
                 }
             }
@@ -124,38 +141,38 @@ public class App extends Application {
             }
         });
 
+//        members.addListener(new ListChangeListener<String>() {
+//            @Override
+//            public void onChanged(Change<? extends String> change) {
+//                currentMembers.clear();
+//                currentMembers.addAll(members);
+//                members.clear();
+//            }
+//        });
+
         membersView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                if (t1 == null) addressForPrivateChat[0] = "";
+
                 addressForPrivateChat[0] = t1;
             }
         });
 
-//        members.addListener(new ListChangeListener<String>() {
-//            @Override
-//            public void onChanged(Change<? extends String> change) {
-//                membersArea.setText("");
-//
-//                Set<String> result = new HashSet<>(members);
-//
-//                for (String name : result) {
-//                    membersArea.appendText(name + "\n");
-//                }
-//            }
-//        });
-
         VBox connectionPane = new VBox();
         connectionPane.getChildren().addAll(hostField, portField, nicknameField, button);
 
+        VBox membersPane = new VBox();
+        GridPane chatSelectorsPane = new GridPane();
+        chatSelectorsPane.add(selectPrivateChat, 1, 0);
+        chatSelectorsPane.add(selectGroupChat, 2, 0);
+        membersPane.getChildren().addAll(membersView, chatSelectorsPane);
+
         BorderPane mainPane = new BorderPane();
-        mainPane.setRight(membersView);
+        mainPane.setRight(membersPane);
         mainPane.setTop(connectionPane);
         mainPane.setCenter(logArea);
         mainPane.setBottom(messageField);
-
-        system = ActorSystem.create("ClusterSystem");
-        clusterListener = system.actorOf(Props.create(ClusterListener.class));
-        system.actorOf(ClusterManager.getProps(messages, members), "manager");
 
         stage.setScene(new Scene(mainPane, 650, 500));
         stage.setTitle("Твой хост: " + Cluster.get(system).readView().selfAddress().host().get() +
@@ -165,6 +182,22 @@ public class App extends Application {
         stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
             public void handle(WindowEvent we) {
                 system.terminate();
+            }
+        });
+
+        selectPrivateChat.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                logArea.setVisible(false);
+            }
+        });
+
+        selectGroupChat.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                logArea.setVisible(true);
+                membersView.getSelectionModel().clearSelection();
+                addressForPrivateChat[0] = "";
             }
         });
     }

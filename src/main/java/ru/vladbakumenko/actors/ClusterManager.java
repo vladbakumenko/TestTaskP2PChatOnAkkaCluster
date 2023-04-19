@@ -2,6 +2,7 @@ package ru.vladbakumenko.actors;
 
 import akka.actor.AbstractActor;
 import akka.actor.Props;
+import javafx.application.Platform;
 import ru.vladbakumenko.model.ChatMembers;
 import ru.vladbakumenko.model.ChatMessage;
 import ru.vladbakumenko.model.Connection;
@@ -35,8 +36,13 @@ public class ClusterManager extends AbstractActor {
                         message -> {
                             currentMembers.addAll(message.getMembers().stream()
                                     .map(Connection::getName).toList());
-                            members.clear();
-                            members.addAll(currentMembers);
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    members.clear();
+                                    members.addAll(currentMembers);
+                                }
+                            });
                         })
                 .build();
     }
