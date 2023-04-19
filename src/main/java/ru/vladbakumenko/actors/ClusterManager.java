@@ -6,12 +6,16 @@ import ru.vladbakumenko.model.ChatMembers;
 import ru.vladbakumenko.model.ChatMessage;
 import ru.vladbakumenko.model.Connection;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ClusterManager extends AbstractActor {
 
     private List<ChatMessage> messages;
     private List<String> members;
+
+    private Set<String> currentMembers = new HashSet<>();
 
     public ClusterManager(List<ChatMessage> list, List<String> members) {
         this.messages = list;
@@ -29,8 +33,10 @@ public class ClusterManager extends AbstractActor {
                 )
                 .match(ChatMembers.class,
                         message -> {
-                            members.addAll(message.getMembers().stream()
+                            currentMembers.addAll(message.getMembers().stream()
                                     .map(Connection::getName).toList());
+                            members.clear();
+                            members.addAll(currentMembers);
                         })
                 .build();
     }

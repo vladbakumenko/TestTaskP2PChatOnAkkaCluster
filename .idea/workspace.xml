@@ -7,6 +7,7 @@
     <list default="true" id="87f008cf-9d51-4878-b2a9-7a5661316707" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -119,7 +120,7 @@
       <workItem from="1681560892519" duration="8074000" />
       <workItem from="1681795932367" duration="7000" />
       <workItem from="1681796267767" duration="4000" />
-      <workItem from="1681796368981" duration="34698000" />
+      <workItem from="1681796368981" duration="38551000" />
     </task>
     <servers />
   </component>
