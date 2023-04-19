@@ -1,7 +1,6 @@
 package ru.vladbakumenko.actors;
 
 import akka.actor.AbstractActor;
-import akka.actor.Address;
 import akka.cluster.Cluster;
 import akka.cluster.ClusterEvent;
 import akka.cluster.ClusterEvent.MemberEvent;
@@ -16,13 +15,15 @@ import ru.vladbakumenko.model.ChatMessage;
 import ru.vladbakumenko.model.Connection;
 import scala.collection.JavaConverters;
 
-import java.util.List;
+import java.util.HashSet;
 import java.util.Set;
 
 public class ClusterListener extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
     private Cluster cluster = Cluster.get(getContext().getSystem());
     private ChatMembers chatMembers = new ChatMembers();
+
+    private Set<Member> currentMembers = new HashSet<>();
 
     // subscribe to cluster changes
     @Override
@@ -44,13 +45,15 @@ public class ClusterListener extends AbstractActor {
                 .match(
                         MemberUp.class,
                         mUp -> {
-//                            Set<Member> members = JavaConverters.setAsJavaSet(cluster.readView().members());
-//                            chatMembers.setMembers(members);
-//                            for (Member member : members) {
-//                                context()
-//                                        .actorSelection(member.address() + "/user/listener")
-//                                        .tell(chatMembers, getSelf());
-//                            }
+                            Set<Member> members = JavaConverters.setAsJavaSet(cluster.readView().members());
+
+                            currentMembers.addAll(members);
+
+                            for (Member member : currentMembers) {
+                                context()
+                                        .actorSelection(member.address() + "/user/manager")
+                                        .tell(chatMembers, getSelf());
+                            }
 
                             log.info("Member is Up: {}", mUp.member());
                         })
@@ -82,25 +85,10 @@ public class ClusterListener extends AbstractActor {
                         }
                 )
                 .match(Connection.class,
-                        user -> {
-                            cluster.join(user.getAddress());
-                            chatMembers.getMembers().add(user);
-
-                            List<Address> addresses = chatMembers.getMembers().stream()
-                                    .map(Connection::getAddress).toList();
-
-                            for (Address address : addresses) {
-                                context()
-                                        .actorSelection(address + "/user/listener")
-                                        .tell(chatMembers, getSelf());
-                            }
+                        connection -> {
+                            cluster.join(connection.getAddress());
+                            chatMembers.getMembers().add(connection);
                         })
-                .match(ChatMembers.class,
-                        members -> {
-                            context().actorSelection(getSelf().path().address() + "/user/manager")
-                                    .tell(members, getSelf());
-                        }
-                )
                 .build();
     }
 }

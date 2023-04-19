@@ -27,6 +27,9 @@ import ru.vladbakumenko.actors.ClusterManager;
 import ru.vladbakumenko.model.ChatMessage;
 import ru.vladbakumenko.model.Connection;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class App extends Application {
 
     private String username = "username-" + System.currentTimeMillis();
@@ -55,12 +58,14 @@ public class App extends Application {
 
         //host select
         TextField hostField = new TextField();
-        hostField.setPromptText("Введи адрес хоста");
+//        hostField.setPromptText("Введи адрес хоста");
+        hostField.setText("127.0.0.1");
         final String[] host = {""};
 
         //port select
         TextField portField = new TextField();
-        portField.setPromptText("Введи номер порта");
+//        portField.setPromptText("Введи номер порта");
+        portField.setText("255");
         final String[] port = {""};
 
         //nickname select
@@ -89,9 +94,9 @@ public class App extends Application {
                 }
 
                 Address address = new Address("akka", "ClusterSystem", host[0], Integer.parseInt(port[0]));
-                Connection user = new Connection(username, address);
+                Connection connection = new Connection(username, address);
 
-                clusterListener.tell(user, ActorRef.noSender());
+                clusterListener.tell(connection, ActorRef.noSender());
             }
         });
 
@@ -119,21 +124,16 @@ public class App extends Application {
             }
         });
 
-//        addresses.selectionModelProperty().addListener(new ChangeListener<MultipleSelectionModel<Member>>() {
-//            @Override
-//            public void changed(ObservableValue<? extends MultipleSelectionModel<Member>> observableValue, MultipleSelectionModel<Member> memberMultipleSelectionModel, MultipleSelectionModel<Member> t1) {
-//                addresses.
-//            }
-//        });
-
         members.addListener(new ListChangeListener<String>() {
             @Override
             public void onChanged(Change<? extends String> change) {
-                ObservableList<? extends String> list = change.getList();
-                for (String name : list) {
+                membersArea.setText("");
+
+                Set<String> result = new HashSet<>(members);
+
+                for (String name : result) {
                     membersArea.appendText(name + "\n");
                 }
-                members.clear();
             }
         });
 
@@ -147,7 +147,7 @@ public class App extends Application {
         mainPane.setBottom(messageField);
 
         system = ActorSystem.create("ClusterSystem");
-        clusterListener = system.actorOf(Props.create(ClusterListener.class), "listener");
+        clusterListener = system.actorOf(Props.create(ClusterListener.class));
         system.actorOf(ClusterManager.getProps(messages, members), "manager");
 
         stage.setScene(new Scene(mainPane, 650, 500));

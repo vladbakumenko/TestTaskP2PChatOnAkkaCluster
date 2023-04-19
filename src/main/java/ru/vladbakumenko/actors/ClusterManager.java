@@ -29,7 +29,6 @@ public class ClusterManager extends AbstractActor {
                 )
                 .match(ChatMembers.class,
                         message -> {
-                            members.clear();
                             members.addAll(message.getMembers().stream()
                                     .map(Connection::getName).toList());
                         })
