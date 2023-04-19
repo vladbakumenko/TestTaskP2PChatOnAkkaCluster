@@ -27,9 +27,6 @@ import ru.vladbakumenko.actors.ClusterManager;
 import ru.vladbakumenko.model.ChatMessage;
 import ru.vladbakumenko.model.Connection;
 
-import java.util.HashSet;
-import java.util.Set;
-
 public class App extends Application {
 
     private String username = "username-" + System.currentTimeMillis();
@@ -37,7 +34,6 @@ public class App extends Application {
     private ActorRef clusterListener;
     private ObservableList<ChatMessage> messages = FXCollections.observableArrayList();
     private ObservableList<String> members = FXCollections.observableArrayList();
-    private ListView<String> membersView = new ListView<>(FXCollections.observableArrayList(members));
 
     public static void main(String[] args) {
         launch(args);
@@ -50,6 +46,8 @@ public class App extends Application {
         logArea.setEditable(true);
 
         //list-view
+        ListView<String> membersView = new ListView<>();
+        membersView.setItems(members);
 
         //list of members
         TextArea membersArea = new TextArea();
@@ -124,24 +122,24 @@ public class App extends Application {
             }
         });
 
-        members.addListener(new ListChangeListener<String>() {
-            @Override
-            public void onChanged(Change<? extends String> change) {
-                membersArea.setText("");
-
-                Set<String> result = new HashSet<>(members);
-
-                for (String name : result) {
-                    membersArea.appendText(name + "\n");
-                }
-            }
-        });
+//        members.addListener(new ListChangeListener<String>() {
+//            @Override
+//            public void onChanged(Change<? extends String> change) {
+//                membersArea.setText("");
+//
+//                Set<String> result = new HashSet<>(members);
+//
+//                for (String name : result) {
+//                    membersArea.appendText(name + "\n");
+//                }
+//            }
+//        });
 
         VBox connectionPane = new VBox();
         connectionPane.getChildren().addAll(hostField, portField, nicknameField, button);
 
         BorderPane mainPane = new BorderPane();
-        mainPane.setRight(membersArea);
+        mainPane.setRight(membersView);
         mainPane.setTop(connectionPane);
         mainPane.setCenter(logArea);
         mainPane.setBottom(messageField);
