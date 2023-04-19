@@ -120,7 +120,7 @@
       <workItem from="1681560892519" duration="8074000" />
       <workItem from="1681795932367" duration="7000" />
       <workItem from="1681796267767" duration="4000" />
-      <workItem from="1681796368981" duration="38551000" />
+      <workItem from="1681796368981" duration="39017000" />
     </task>
     <servers />
   </component>
@@ -146,7 +146,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="master" />
+                        <option value="add_private_chat" />
                       </list>
                     </value>
                   </entry>
