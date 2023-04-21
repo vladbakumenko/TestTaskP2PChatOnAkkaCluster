@@ -3,6 +3,7 @@ package ru.vladbakumenko.actors;
 import akka.actor.AbstractActor;
 import akka.actor.Props;
 import javafx.application.Platform;
+import ru.vladbakumenko.App;
 import ru.vladbakumenko.model.ChatMembers;
 import ru.vladbakumenko.model.ChatMessage;
 import ru.vladbakumenko.model.Connection;
@@ -28,8 +29,12 @@ public class ClusterManager extends AbstractActor {
         return receiveBuilder()
                 .match(ChatMessage.class,
                         message -> {
-                            getContext().getSystem().log().info(message.getValue());
-                            messages.add(message);
+                            Platform.runLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    messages.add(message);
+                                }
+                            });
                         }
                 )
                 .match(ChatMembers.class,
@@ -40,6 +45,7 @@ public class ClusterManager extends AbstractActor {
                                 @Override
                                 public void run() {
                                     members.clear();
+                                    members.add(App.GROUP_CHAT_NAME);
                                     members.addAll(currentMembers);
                                 }
                             });

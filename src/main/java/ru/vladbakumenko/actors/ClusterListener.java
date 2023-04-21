@@ -87,7 +87,6 @@ public class ClusterListener extends AbstractActor {
                         ChatMessage.class,
                         message -> {
                             Set<Member> members = JavaConverters.setAsJavaSet(cluster.readView().members());
-
                             for (Member member : members) {
                                 context()
                                         .actorSelection(member.address() + "/user/manager")
