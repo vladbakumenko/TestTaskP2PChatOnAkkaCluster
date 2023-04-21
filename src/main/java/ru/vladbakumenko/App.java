@@ -13,10 +13,7 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextArea;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -154,10 +151,22 @@ public class App extends Application {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
                 if (t1 == null) addressForPrivateChat[0] = "";
-
                 addressForPrivateChat[0] = t1;
             }
         });
+
+//        members.addListener(new ListChangeListener<String>() {
+//            @Override
+//            public void onChanged(Change<? extends String> change) {
+//                membersArea.setText("");
+//
+//                Set<String> result = new HashSet<>(members);
+//
+//                for (String name : result) {
+//                    membersArea.appendText(name + "\n");
+//                }
+//            }
+//        });
 
         VBox connectionPane = new VBox();
         connectionPane.getChildren().addAll(hostField, portField, nicknameField, button);
