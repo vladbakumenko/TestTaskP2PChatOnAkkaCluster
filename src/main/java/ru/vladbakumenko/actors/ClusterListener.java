@@ -13,12 +13,15 @@ import akka.cluster.Member;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
 import ru.vladbakumenko.model.ChatMembers;
-import ru.vladbakumenko.model.ChatMessage;
 import ru.vladbakumenko.model.Connection;
+import ru.vladbakumenko.model.GroupMessage;
 import ru.vladbakumenko.model.PrivateMessage;
 import scala.collection.JavaConverters;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class ClusterListener extends AbstractActor {
     private LoggingAdapter log = Logging.getLogger(getContext().getSystem(), this);
@@ -84,25 +87,29 @@ public class ClusterListener extends AbstractActor {
                             // ignore
                         })
                 .match(
-                        ChatMessage.class,
+                        PrivateMessage.class,
                         message -> {
-                            Set<Member> members = JavaConverters.setAsJavaSet(cluster.readView().members());
+                            var sender = getAddress(message.getSenderName());
+                            var recipient = getAddress(message.getRecipientName());
 
-                            for (Member member : members) {
-                                context()
-                                        .actorSelection(member.address() + "/user/manager")
+                            if (sender.equals(recipient)) {
+                                context().actorSelection(sender + "/user/manager")
+                                        .tell(message, getSelf());
+                            } else {
+                                context().actorSelection(sender + "/user/manager")
+                                        .tell(message, getSelf());
+                                context().actorSelection(recipient + "/user/manager")
                                         .tell(message, getSelf());
                             }
                         })
                 .match(
-                        PrivateMessage.class,
+                        GroupMessage.class,
                         message -> {
-                            List<Address> address = List.of(getAddress(message.getRecipientName()),
-                                    getAddress(message.getUserName()));
-                            for (Address ad : address) {
-                                ChatMessage chatMessage = new ChatMessage(message.getUserName(), message.getValue());
-                                context().actorSelection(ad + "/user/manager")
-                                        .tell(chatMessage, getSelf());
+                            Set<Member> members = JavaConverters.setAsJavaSet(cluster.readView().members());
+                            for (Member member : members) {
+                                context()
+                                        .actorSelection(member.address() + "/user/manager")
+                                        .tell(message, getSelf());
                             }
                         })
                 .match(
@@ -125,6 +132,6 @@ public class ClusterListener extends AbstractActor {
     private Address getAddress(String name) {
         return chatMembers.getMembers().stream()
                 .filter(connection -> connection.getName().equals(name))
-                .findFirst().orElseThrow().getRecipientAddress();
+                .findFirst().orElseThrow().getUserAddress();
     }
 }

@@ -12,18 +12,18 @@ import java.util.Objects;
 public class Connection implements Serializable {
     private String name;
     private Address connectionAddress;
-    private Address recipientAddress;
+    private Address userAddress;
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Connection that = (Connection) o;
-        return Objects.equals(name, that.name) && Objects.equals(connectionAddress, that.connectionAddress) && Objects.equals(recipientAddress, that.recipientAddress);
+        return Objects.equals(name, that.name) && Objects.equals(connectionAddress, that.connectionAddress) && Objects.equals(userAddress, that.userAddress);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(name, connectionAddress, recipientAddress);
+        return Objects.hash(name, connectionAddress, userAddress);
     }
 }
