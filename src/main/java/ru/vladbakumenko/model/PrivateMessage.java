@@ -1,12 +1,20 @@
 package ru.vladbakumenko.model;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import java.io.Serializable;
 
-@Data
-@AllArgsConstructor
-public class PrivateMessage {
-    private String userName;
+public class PrivateMessage extends GroupMessage implements Serializable {
     private String recipientName;
-    private String value;
+
+    public PrivateMessage(String senderName, String value, String recipientName) {
+        super(senderName, value);
+        this.recipientName = recipientName;
+    }
+
+    public String getRecipientName() {
+        return recipientName;
+    }
+
+    public void setRecipientName(String recipientName) {
+        this.recipientName = recipientName;
+    }
 }
