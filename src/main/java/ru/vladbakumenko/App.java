@@ -211,6 +211,19 @@ public class App extends Application {
             }
         });
 
+//        members.addListener(new ListChangeListener<String>() {
+//            @Override
+//            public void onChanged(Change<? extends String> change) {
+//                membersArea.setText("");
+//
+//                Set<String> result = new HashSet<>(members);
+//
+//                for (String name : result) {
+//                    membersArea.appendText(name + "\n");
+//                }
+//            }
+//        });
+
         VBox connectionPane = new VBox();
         connectionPane.getChildren().addAll(hostField, portField, nicknameField, button);
 
