@@ -22,6 +22,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Class" />
+        <option value="Enum" />
       </list>
     </option>
   </component>
@@ -29,11 +30,21 @@
     <branch-grouping />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="add_private_chat" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="UPDATE_TYPE" value="REBASE" />
+  </component>
+  <component name="GitRewordedCommitMessages">
+    <option name="commitMessagesMapping">
+      <RewordedCommitMessageMapping>
+        <option name="originalMessage" value="added list view of members" />
+        <option name="rewordedMessage" value="added list view of members" />
+      </RewordedCommitMessageMapping>
+    </option>
+    <option name="currentCommit" value="1" />
+    <option name="onto" value="3773d2f11d37a4e6f8771c4913e7d97fadf0900a" />
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
@@ -120,7 +131,8 @@
       <workItem from="1681560892519" duration="8074000" />
       <workItem from="1681795932367" duration="7000" />
       <workItem from="1681796267767" duration="4000" />
-      <workItem from="1681796368981" duration="39017000" />
+      <workItem from="1681796368981" duration="49795000" />
+      <workItem from="1681907599730" duration="24323000" />
     </task>
     <servers />
   </component>
@@ -146,7 +158,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="add_private_chat" />
+                        <option value="add_private_chat_simple_way" />
                       </list>
                     </value>
                   </entry>
