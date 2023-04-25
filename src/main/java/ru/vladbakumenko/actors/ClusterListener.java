@@ -12,10 +12,10 @@ import akka.cluster.ClusterEvent.UnreachableMember;
 import akka.cluster.Member;
 import akka.event.Logging;
 import akka.event.LoggingAdapter;
-import ru.vladbakumenko.model.ChatMembers;
-import ru.vladbakumenko.model.Connection;
-import ru.vladbakumenko.model.GroupMessage;
-import ru.vladbakumenko.model.PrivateMessage;
+import ru.vladbakumenko.dto.ChatMembers;
+import ru.vladbakumenko.dto.Connection;
+import ru.vladbakumenko.dto.GroupMessage;
+import ru.vladbakumenko.dto.PrivateMessage;
 import scala.collection.JavaConverters;
 
 import java.util.HashMap;

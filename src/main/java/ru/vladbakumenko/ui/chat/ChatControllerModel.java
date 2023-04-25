@@ -1,5 +1,9 @@
-package ru.vladbakumenko.model;
+package ru.vladbakumenko.ui.chat;
 
+
+import ru.vladbakumenko.dto.ChanelCompound;
+import ru.vladbakumenko.dto.GroupMessage;
+import ru.vladbakumenko.dto.PrivateMessage;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -4,14 +4,13 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import javafx.application.Platform;
 import ru.vladbakumenko.App;
-import ru.vladbakumenko.controller.ChatController;
-import ru.vladbakumenko.model.ChatMembers;
-import ru.vladbakumenko.model.GroupMessage;
-import ru.vladbakumenko.model.Connection;
-import ru.vladbakumenko.model.PrivateMessage;
+import ru.vladbakumenko.ui.chat.ChatController;
+import ru.vladbakumenko.dto.ChatMembers;
+import ru.vladbakumenko.dto.GroupMessage;
+import ru.vladbakumenko.dto.Connection;
+import ru.vladbakumenko.dto.PrivateMessage;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public class ClusterManager extends AbstractActor {

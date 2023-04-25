@@ -1,4 +1,4 @@
-package ru.vladbakumenko.model;
+package ru.vladbakumenko.dto;
 
 import akka.actor.Address;
 import lombok.AllArgsConstructor;

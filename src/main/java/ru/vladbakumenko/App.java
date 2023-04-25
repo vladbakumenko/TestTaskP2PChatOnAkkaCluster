@@ -13,9 +13,9 @@ import javafx.stage.WindowEvent;
 import lombok.SneakyThrows;
 import ru.vladbakumenko.actors.ClusterListener;
 import ru.vladbakumenko.actors.ClusterManager;
-import ru.vladbakumenko.controller.ChatController;
-import ru.vladbakumenko.controller.ConnectionController;
-import ru.vladbakumenko.model.ConnectionControllerModel;
+import ru.vladbakumenko.ui.chat.ChatController;
+import ru.vladbakumenko.ui.connection.ConnectionController;
+import ru.vladbakumenko.ui.connection.ConnectionControllerModel;
 
 import java.util.Objects;
 
@@ -58,7 +58,7 @@ public class App extends Application {
     @SneakyThrows
     public void showConnectionWindow() {
         FXMLLoader loader = new FXMLLoader();
-        loader.setLocation(Objects.requireNonNull(getClass().getResource("/Connection.fxml")));
+        loader.setLocation(Objects.requireNonNull(getClass().getResource("/ru/vladbakumenko/ui/view/Connection.fxml")));
         rootLayout = loader.load();
 
         Scene scene = new Scene(rootLayout, 400, 300);
@@ -74,7 +74,7 @@ public class App extends Application {
 
     @SneakyThrows
     public void showChatWindow(ConnectionControllerModel connectionModel) {
-        loader.setLocation(Objects.requireNonNull(getClass().getResource("/Chat.fxml")));
+        loader.setLocation(Objects.requireNonNull(getClass().getResource("/ru/vladbakumenko/ui/view/Chat.fxml")));
         rootLayout = loader.load();
 
         Scene scene = new Scene(rootLayout, 650, 500);

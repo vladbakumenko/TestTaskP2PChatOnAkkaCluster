@@ -1,4 +1,4 @@
-package ru.vladbakumenko.controller;
+package ru.vladbakumenko.ui.chat;
 
 import akka.actor.ActorRef;
 import javafx.beans.value.ChangeListener;
@@ -13,7 +13,8 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import ru.vladbakumenko.model.*;
+import ru.vladbakumenko.dto.*;
+import ru.vladbakumenko.ui.connection.ConnectionControllerModel;
 
 import java.util.ArrayList;
 import java.util.List;

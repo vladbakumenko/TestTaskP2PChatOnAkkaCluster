@@ -1,4 +1,4 @@
-package ru.vladbakumenko.controller;
+package ru.vladbakumenko.ui.connection;
 
 import akka.actor.ActorRef;
 import akka.actor.Address;
@@ -6,8 +6,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import ru.vladbakumenko.App;
-import ru.vladbakumenko.model.Connection;
-import ru.vladbakumenko.model.ConnectionControllerModel;
+import ru.vladbakumenko.dto.Connection;
 
 public class ConnectionController {
 

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<AnchorPane prefHeight="500.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.vladbakumenko.ui.chat.ChatController">
+    <children>
+        <BorderPane prefHeight="500.0" prefWidth="650.0">
+            <right>
+                <ListView fx:id="listViewOfMembers" editable="true" prefHeight="375.0" prefWidth="220.0" BorderPane.alignment="CENTER" />
+            </right>
+            <center>
+                <TextArea fx:id="logArea" prefHeight="375.0" prefWidth="370.0" promptText="Окно чата" BorderPane.alignment="CENTER" />
+            </center>
+            <bottom>
+                <TextField fx:id="messageField" onKeyPressed="#enterKeyPressed" promptText="Ваше сообщение" BorderPane.alignment="CENTER" />
+            </bottom>
+        </BorderPane>
+    </children>
+</AnchorPane>

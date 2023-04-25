@@ -1,4 +1,4 @@
-package ru.vladbakumenko.model;
+package ru.vladbakumenko.ui.connection;
 
 import akka.actor.ActorRef;
 import akka.actor.Address;

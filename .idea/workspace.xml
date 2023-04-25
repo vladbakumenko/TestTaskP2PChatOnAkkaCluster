@@ -5,24 +5,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="87f008cf-9d51-4878-b2a9-7a5661316707" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/unnamed.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/shelf/unnamed/shelved.patch" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/encodings.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jpa-buddy.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/uiDesigner.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/codeStyleConfig.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/controller/ChatController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/controller/ChatController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/controller/ConnectionController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/controller/ConnectionController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChatUiModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChatControllerModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ConnectionUiModel.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ConnectionControllerModel.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/Chat.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/Chat.fxml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/Connection.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/Connection.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -35,8 +22,7 @@
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
       <list>
-        <option value="Enum" />
-        <option value="FxmlFile" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -44,7 +30,7 @@
     <branch-grouping />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="add_private_chat_changing_history" />
+        <entry key="$PROJECT_DIR$" value="modified_ui" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -52,13 +38,6 @@
   </component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
-  </component>
-  <component name="MavenImportPreferences">
-    <option name="generalSettings">
-      <MavenGeneralSettings>
-        <option name="useMavenConfig" value="true" />
-      </MavenGeneralSettings>
-    </option>
   </component>
   <component name="ProjectCodeStyleSettingsMigration">
     <option name="version" value="2" />
@@ -75,7 +54,7 @@
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "WebServerToolWindowFactoryState": "false",
-    "last_opened_file_path": "C:/Users/Влад/Desktop/TestTaskP2PChatOnAkkaCluster/TestTaskP2PChatOnAkkaClusterDesktop",
+    "last_opened_file_path": "C:/Users/Влад/Desktop",
     "nodejs_package_manager_path": "npm",
     "project.structure.last.edited": "Modules",
     "project.structure.proportion": "0.0",
@@ -85,8 +64,6 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="C:\Users\Влад\dev\TestTaskP2PChatOnAkkaCluster\src\main\resources" />
-      <recent name="C:\Users\Влад\dev\TestTaskP2PChatOnAkkaCluster\src\main\java\ru\vladbakumenko" />
       <recent name="C:\Users\Влад\dev\TestTaskP2PChat\src\main\resources" />
     </key>
   </component>
@@ -145,16 +122,7 @@
       <workItem from="1681795932367" duration="7000" />
       <workItem from="1681796267767" duration="4000" />
       <workItem from="1681796368981" duration="666000" />
-      <workItem from="1682409358166" duration="891000" />
     </task>
-    <task id="LOCAL-00001">
-      <created>1682332511341</created>
-      <option name="number" value="00001" />
-      <option name="presentableId" value="LOCAL-00001" />
-      <option name="project" value="LOCAL" />
-      <updated>1682332511341</updated>
-    </task>
-    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -190,20 +158,6 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="VcsManagerConfiguration">
-    <option name="LAST_COMMIT_MESSAGE" value="" />
-  </component>
-  <component name="XDebuggerManager">
-    <breakpoint-manager>
-      <breakpoints>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/ru/vladbakumenko/controller/ChatController.java</url>
-          <line>169</line>
-          <option name="timeStamp" value="87" />
-        </line-breakpoint>
-      </breakpoints>
-    </breakpoint-manager>
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />
