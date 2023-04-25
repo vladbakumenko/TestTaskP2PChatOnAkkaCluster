@@ -92,6 +92,10 @@ public class ClusterListener extends AbstractActor {
                             var sender = getAddress(message.getSenderName());
                             var recipient = getAddress(message.getRecipientName());
 
+                            System.out.println("message sender " + message.getSenderName());
+                            System.out.println("message recipient " + message.getRecipientName());
+
+
                             if (sender.equals(recipient)) {
                                 context().actorSelection(sender + "/user/manager")
                                         .tell(message, getSelf());
