@@ -5,7 +5,7 @@ import akka.actor.Address;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 
-public class ConnectionUiModel {
+public class ConnectionControllerModel {
     private ActorRef clusterListener = null;
     private StringProperty host = new SimpleStringProperty("127.0.0.1");
     private StringProperty port = new SimpleStringProperty("255");
@@ -21,14 +21,14 @@ public class ConnectionUiModel {
 
     private Address selfAddress = null;
 
-    public ConnectionUiModel(ActorRef clusterListener, StringProperty host, StringProperty port, StringProperty nickname) {
+    public ConnectionControllerModel(ActorRef clusterListener, StringProperty host, StringProperty port, StringProperty nickname) {
         this.clusterListener = clusterListener;
         this.host = host;
         this.port = port;
         this.nickname = nickname;
     }
 
-    public ConnectionUiModel() {
+    public ConnectionControllerModel() {
     }
 
     public ActorRef getClusterListener() {

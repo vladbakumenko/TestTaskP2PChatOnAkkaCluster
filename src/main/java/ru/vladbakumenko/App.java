@@ -4,8 +4,6 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.cluster.Cluster;
 import javafx.application.Application;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -17,7 +15,7 @@ import ru.vladbakumenko.actors.ClusterListener;
 import ru.vladbakumenko.actors.ClusterManager;
 import ru.vladbakumenko.controller.ChatController;
 import ru.vladbakumenko.controller.ConnectionController;
-import ru.vladbakumenko.model.ConnectionUiModel;
+import ru.vladbakumenko.model.ConnectionControllerModel;
 
 import java.util.Objects;
 
@@ -75,7 +73,7 @@ public class App extends Application {
     }
 
     @SneakyThrows
-    public void showChatWindow(ConnectionUiModel connectionModel) {
+    public void showChatWindow(ConnectionControllerModel connectionModel) {
         loader.setLocation(Objects.requireNonNull(getClass().getResource("/Chat.fxml")));
         rootLayout = loader.load();
 
@@ -84,7 +82,9 @@ public class App extends Application {
         controller.setConnectionModel(connectionModel);
         system.actorOf(ClusterManager.getProps(controller),
                 "manager");
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        Stage chatStage = new Stage();
+        chatStage.setScene(scene);
+        chatStage.setTitle("Твой никнейм: " + connectionModel.getNickname());
+        chatStage.show();
     }
 }

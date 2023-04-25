@@ -7,7 +7,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.TextField;
 import ru.vladbakumenko.App;
 import ru.vladbakumenko.model.Connection;
-import ru.vladbakumenko.model.ConnectionUiModel;
+import ru.vladbakumenko.model.ConnectionControllerModel;
 
 public class ConnectionController {
 
@@ -23,7 +23,7 @@ public class ConnectionController {
     @FXML
     private TextField port;
 
-    private ConnectionUiModel model = new ConnectionUiModel();
+    private ConnectionControllerModel model = new ConnectionControllerModel();
 
     private App app = null;
 
@@ -37,11 +37,11 @@ public class ConnectionController {
         this.app = app;
     }
 
-    public void setModel(ConnectionUiModel model) {
+    public void setModel(ConnectionControllerModel model) {
         this.model = model;
     }
 
-    public ConnectionUiModel getModel() {
+    public ConnectionControllerModel getModel() {
         return model;
     }
 
@@ -59,7 +59,6 @@ public class ConnectionController {
                     Integer.parseInt(model.getPort()));
 
             Connection connection = new Connection(model.getNickname(), address, model.getSelfAddress());
-            System.out.println(connection + "!!!!!!!!!!!!!!!!!!");
             model.getClusterListener().tell(connection, ActorRef.noSender());
 
             app.getPrimaryStage().close();

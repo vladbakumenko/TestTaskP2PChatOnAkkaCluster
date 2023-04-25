@@ -8,7 +8,7 @@ import java.util.Map;
 
 import static ru.vladbakumenko.App.GROUP_CHAT_NAME;
 
-public class ChatUiModel {
+public class ChatControllerModel {
     private List<GroupMessage> historyOfGroupMessages = new ArrayList<>();
     private Map<ChanelCompound, List<PrivateMessage>> historyOfPrivateMessages = new HashMap<>();
     private String nameOfChat = GROUP_CHAT_NAME;

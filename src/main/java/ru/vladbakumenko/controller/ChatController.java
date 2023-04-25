@@ -31,8 +31,8 @@ public class ChatController {
     @FXML
     private TextField messageField;
 
-    private ChatUiModel model = new ChatUiModel();
-    private ConnectionUiModel connectionModel = new ConnectionUiModel();
+    private ChatControllerModel model = new ChatControllerModel();
+    private ConnectionControllerModel connectionModel = new ConnectionControllerModel();
     private List<PrivateMessage> transportList;
 
     private ObservableList<GroupMessage> groupMessages = FXCollections.observableArrayList();
@@ -63,19 +63,19 @@ public class ChatController {
         this.members = members;
     }
 
-    public ConnectionUiModel getConnectionModel() {
+    public ConnectionControllerModel getConnectionModel() {
         return connectionModel;
     }
 
-    public void setConnectionModel(ConnectionUiModel connectionModel) {
+    public void setConnectionModel(ConnectionControllerModel connectionModel) {
         this.connectionModel = connectionModel;
     }
 
-    public ChatUiModel getModel() {
+    public ChatControllerModel getModel() {
         return model;
     }
 
-    public void setModel(ChatUiModel model) {
+    public void setModel(ChatControllerModel model) {
         this.model = model;
     }
 
@@ -85,15 +85,13 @@ public class ChatController {
 
     @FXML
     void initialize() {
-//        members.addListener((ListChangeListener<? super String>) change -> {
-//            System.out.println(change.getList());
-//        });
         listViewOfMembers.setItems(members);
 
         //list-view listener
         listViewOfMembers.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
             @Override
             public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {
+                model.setNameOfChat(t1);
                 if (t1.equals(GROUP_CHAT_NAME)) {
                     logArea.clear();
                     logArea.setText(addHistoryToLog(model.getHistoryOfGroupMessages()));
@@ -107,7 +105,6 @@ public class ChatController {
                     }
                     logArea.clear();
                     logArea.setText(addHistoryToLog(transportList));
-                    model.setNameOfChat(t1);
                 }
             }
         });

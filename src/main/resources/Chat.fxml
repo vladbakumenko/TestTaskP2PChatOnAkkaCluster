@@ -5,6 +5,7 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.text.Font?>
 
 <AnchorPane prefHeight="500.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.vladbakumenko.controller.ChatController">
     <children>
@@ -13,11 +14,16 @@
                 <ListView fx:id="listViewOfMembers" prefHeight="375.0" prefWidth="220.0" BorderPane.alignment="CENTER" />
             </right>
             <center>
-                <TextArea fx:id="logArea" prefHeight="375.0" prefWidth="370.0" BorderPane.alignment="CENTER" />
+                <TextArea fx:id="logArea" prefHeight="375.0" prefWidth="370.0" promptText="Окно чата" BorderPane.alignment="CENTER">
+               <font>
+                  <Font size="15.0" />
+               </font></TextArea>
             </center>
             <bottom>
-                <TextField fx:id="messageField" promptText="Ваше сообщение" BorderPane.alignment="CENTER"
-                           onKeyPressed="#enterKeyPressed"/>
+                <TextField fx:id="messageField" onKeyPressed="#enterKeyPressed" promptText="Ваше сообщение" BorderPane.alignment="CENTER">
+               <font>
+                  <Font size="15.0" />
+               </font></TextField>
             </bottom>
         </BorderPane>
     </children>
