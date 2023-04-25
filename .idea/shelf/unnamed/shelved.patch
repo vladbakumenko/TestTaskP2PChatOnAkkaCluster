@@ -1,0 +1,304 @@
+Index: src/main/java/ru/vladbakumenko/App.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package ru.vladbakumenko;\n\nimport akka.actor.ActorRef;\nimport akka.actor.ActorSystem;\nimport akka.actor.Address;\nimport akka.cluster.Cluster;\nimport javafx.application.Application;\nimport javafx.beans.value.ChangeListener;\nimport javafx.beans.value.ObservableValue;\nimport javafx.collections.FXCollections;\nimport javafx.collections.ListChangeListener;\nimport javafx.collections.ObservableList;\nimport javafx.event.ActionEvent;\nimport javafx.event.EventHandler;\nimport javafx.scene.Scene;\nimport javafx.scene.control.*;\nimport javafx.scene.input.KeyCode;\nimport javafx.scene.input.KeyEvent;\nimport javafx.scene.layout.BorderPane;\nimport javafx.scene.layout.StackPane;\nimport javafx.scene.layout.VBox;\nimport javafx.stage.Stage;\nimport javafx.stage.WindowEvent;\nimport ru.vladbakumenko.actors.ClusterListener;\nimport ru.vladbakumenko.actors.ClusterManager;\nimport ru.vladbakumenko.model.ChanelCompound;\nimport ru.vladbakumenko.model.Connection;\nimport ru.vladbakumenko.model.GroupMessage;\nimport ru.vladbakumenko.model.PrivateMessage;\n\nimport java.util.ArrayList;\nimport java.util.HashMap;\nimport java.util.List;\nimport java.util.Map;\n\npublic class App extends Application {\n    private String username = \"username-\" + System.currentTimeMillis();\n    private ActorSystem system = ActorSystem.create(\"ClusterSystem\");\n    private Cluster cluster = Cluster.get(system);\n    private ActorRef clusterListener = system.actorOf(ClusterListener.getProps(cluster), \"listener\");\n    private ObservableList<GroupMessage> groupMessages = FXCollections.observableArrayList();\n    private ObservableList<PrivateMessage> privateMessages = FXCollections.observableArrayList();\n    private ObservableList<String> members = FXCollections.observableArrayList();\n\n    private ActorRef clusterManager = system.actorOf(ClusterManager.getProps(groupMessages, privateMessages, members),\n            \"manager\");\n\n    private List<GroupMessage> historyOfGroupMessages = new ArrayList<>();\n    private List<PrivateMessage> transportList;\n    private Map<ChanelCompound, List<PrivateMessage>> historyOfPrivateMessages = new HashMap<>();\n    public static final String GROUP_CHAT_NAME = \"GROUP CHAT\";\n\n    public static void main(String[] args) {\n        launch(args);\n    }\n\n    @Override\n    public void start(Stage stage) throws Exception {\n        //console\n        TextArea logArea = new TextArea();\n        logArea.setEditable(true);\n\n        //list-view and buttons\n        ListView<String> membersView = new ListView<>(members);\n//        Button selectPrivateChat = new Button(\"Приватный чат\");\n//        Button selectGroupChat = new Button(\"Общий чат\");\n\n        //address of member for private chat\n        final String[] nameOfChat = {GROUP_CHAT_NAME};\n\n        //list of members\n//        TextArea membersArea = new TextArea();\n//        membersArea.setPrefColumnCount(20);\n//        membersArea.setEditable(true);\n\n        //host select\n        TextField hostField = new TextField();\n//        hostField.setPromptText(\"Введи адрес хоста\");\n        hostField.setText(\"127.0.0.1\");\n        final String[] host = {\"\"};\n\n        //port select\n        TextField portField = new TextField();\n//        portField.setPromptText(\"Введи номер порта\");\n        portField.setText(\"255\");\n        final String[] port = {\"\"};\n\n        //nickname select\n        TextField nicknameField = new TextField();\n//        nicknameField.setPromptText(\"Введи свой никнейм\");\n        nicknameField.setText(system.settings().config().getString(\"akka.remote.artery.canonical.port\"));\n        final String[] nickname = {\"\"};\n\n        //button for connect\n        Button button = new Button(\"Подключиться\");\n\n        button.setOnAction(new EventHandler<ActionEvent>() {\n            @Override\n            public void handle(ActionEvent actionEvent) {\n                StringBuilder sb = new StringBuilder();\n                boolean show = false;\n\n                host[0] = hostField.getText();\n                port[0] = portField.getText();\n                nickname[0] = nicknameField.getText();\n\n                if (host[0].isBlank()) {\n                    sb.append(\"Не введён адрес хоста.\" + \"\\n\");\n                    show = true;\n                }\n                if (port[0].isBlank()) {\n                    sb.append(\"Не введён адрес порта.\" + \"\\n\");\n                    show = true;\n                }\n                if (nickname[0] != null && !nickname[0].isBlank()) {\n                    username = nickname[0];\n                }\n\n                if (show) {\n                    Stage newWindow = new Stage();\n                    newWindow.setTitle(\"\");\n                    StackPane pane = new StackPane();\n                    Label label = new Label(sb.toString());\n                    pane.getChildren().add(label);\n                    newWindow.setScene(new Scene(pane, 300, 100));\n                    newWindow.show();\n                }\n\n                Address address = new Address(\"akka\", \"ClusterSystem\", host[0], Integer.parseInt(port[0]));\n                Connection connection = new Connection(username, address, cluster.selfAddress());\n                clusterListener.tell(connection, ActorRef.noSender());\n            }\n        });\n\n        //message\n        TextField messageField = new TextField();\n        messageField.setPromptText(\"Ваше сообщение\");\n        messageField.setOnKeyPressed(new EventHandler<KeyEvent>() {\n            @Override\n            public void handle(KeyEvent keyEvent) {\n                if (keyEvent.getCode() == KeyCode.ENTER) {\n                    String text = messageField.getText();\n\n                    if (nameOfChat[0].equals(GROUP_CHAT_NAME)) {\n                        GroupMessage message = new GroupMessage(username, text);\n                        clusterListener.tell(message, ActorRef.noSender());\n                    } else {\n                        System.out.println(nameOfChat[0]);\n                        PrivateMessage message = new PrivateMessage(username, text, nameOfChat[0]);\n                        clusterListener.tell(message, ActorRef.noSender());\n                    }\n                    messageField.setText(\"\");\n                }\n            }\n        });\n\n        groupMessages.addListener(new ListChangeListener<GroupMessage>() {\n            @Override\n            public void onChanged(Change<? extends GroupMessage> change) {\n                GroupMessage message = change.getList().get(0);\n                System.out.println(message.getValue() + \" - group\");\n                if (nameOfChat[0].equals(GROUP_CHAT_NAME)) {\n                    logArea.appendText(message.getSenderName() + \": \" + message.getValue() + \"\\n\");\n                }\n                groupMessages.remove(0);\n\n                historyOfGroupMessages.add(message);\n            }\n        });\n\n        privateMessages.addListener(new ListChangeListener<PrivateMessage>() {\n            @Override\n            public void onChanged(Change<? extends PrivateMessage> change) {\n                PrivateMessage message = change.getList().get(0);\n                System.out.println(message.getValue() + \" - private\");\n                if (nameOfChat[0].equals(message.getSenderName()) ||\n                        nameOfChat[0].equals(message.getRecipientName())) {\n                    logArea.appendText(message.getSenderName() + \": \" + message.getValue() + \"\\n\");\n                }\n                privateMessages.remove(0);\n\n                ChanelCompound compound = new ChanelCompound(message.getSenderName(), message.getRecipientName());\n                if (historyOfPrivateMessages.containsKey(compound)) {\n                    transportList = historyOfPrivateMessages.get(compound);\n                } else {\n                    transportList = new ArrayList<>();\n                    historyOfPrivateMessages.put(compound, transportList);\n                }\n                transportList.add(message);\n            }\n        });\n\n        membersView.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {\n            @Override\n            public void changed(ObservableValue<? extends String> observableValue, String s, String t1) {\n                if (t1.equals(GROUP_CHAT_NAME)) {\n                    logArea.clear();\n                    logArea.setText(addHistoryToLog(historyOfGroupMessages));\n                } else {\n                    ChanelCompound chanelCompound = new ChanelCompound(username, t1);\n                    if (historyOfPrivateMessages.containsKey(chanelCompound)) {\n                        transportList = historyOfPrivateMessages.get(chanelCompound);\n                    } else {\n                        transportList = new ArrayList<>();\n                        historyOfPrivateMessages.put(chanelCompound, transportList);\n                    }\n                    logArea.clear();\n                    logArea.setText(addHistoryToLog(transportList));\n                }\n                nameOfChat[0] = t1;\n            }\n        });\n\n        VBox connectionPane = new VBox();\n        connectionPane.getChildren().addAll(hostField, portField, nicknameField, button);\n\n        BorderPane mainPane = new BorderPane();\n        mainPane.setRight(membersView);\n        mainPane.setTop(connectionPane);\n        mainPane.setCenter(logArea);\n        mainPane.setBottom(messageField);\n\n        stage.setScene(new Scene(mainPane, 650, 500));\n        stage.setTitle(\"Твой хост: \" + Cluster.get(system).readView().selfAddress().host().get() +\n                \" и порт: \" + Cluster.get(system).readView().selfAddress().port().get());\n        stage.show();\n\n        stage.setOnCloseRequest(new EventHandler<WindowEvent>() {\n            public void handle(WindowEvent we) {\n                system.terminate();\n            }\n        });\n\n\n//        selectPrivateChat.setOnAction(new EventHandler<ActionEvent>() {\n//            @Override\n//            public void handle(ActionEvent actionEvent) {\n//                logArea.setVisible(false);\n//            }\n//        });\n//\n//        selectGroupChat.setOnAction(new EventHandler<ActionEvent>() {\n//            @Override\n//            public void handle(ActionEvent actionEvent) {\n//                logArea.setVisible(true);\n//                membersView.getSelectionModel().clearSelection();\n//                addressOfChat[0] = \"\";\n//            }\n//        });\n    }\n\n    private String addHistoryToLog(List<? extends GroupMessage> messages) {\n        StringBuilder sb = new StringBuilder();\n        for (GroupMessage message : messages) {\n            sb.append(message.getSenderName()).append(\": \").append(message.getValue()).append(\"\\n\");\n        }\n        return sb.toString();\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/ru/vladbakumenko/App.java b/src/main/java/ru/vladbakumenko/App.java
+--- a/src/main/java/ru/vladbakumenko/App.java	(revision 14ca55f57d24839f6ddfb216a33273b141120edf)
++++ b/src/main/java/ru/vladbakumenko/App.java	(date 1682332504557)
+@@ -12,10 +12,12 @@
+ import javafx.collections.ObservableList;
+ import javafx.event.ActionEvent;
+ import javafx.event.EventHandler;
++import javafx.fxml.FXMLLoader;
+ import javafx.scene.Scene;
+ import javafx.scene.control.*;
+ import javafx.scene.input.KeyCode;
+ import javafx.scene.input.KeyEvent;
++import javafx.scene.layout.AnchorPane;
+ import javafx.scene.layout.BorderPane;
+ import javafx.scene.layout.StackPane;
+ import javafx.scene.layout.VBox;
+@@ -23,6 +25,7 @@
+ import javafx.stage.WindowEvent;
+ import ru.vladbakumenko.actors.ClusterListener;
+ import ru.vladbakumenko.actors.ClusterManager;
++import ru.vladbakumenko.conroller.ConnectionController;
+ import ru.vladbakumenko.model.ChanelCompound;
+ import ru.vladbakumenko.model.Connection;
+ import ru.vladbakumenko.model.GroupMessage;
+@@ -49,30 +52,33 @@
+     private List<PrivateMessage> transportList;
+     private Map<ChanelCompound, List<PrivateMessage>> historyOfPrivateMessages = new HashMap<>();
+     public static final String GROUP_CHAT_NAME = "GROUP CHAT";
+-
+-    public static void main(String[] args) {
+-        launch(args);
+-    }
+-
+     @Override
+     public void start(Stage stage) throws Exception {
++
++        FXMLLoader loader = new FXMLLoader();
++        loader.setLocation(getClass().getResource("/Connection.fxml"));
++        AnchorPane connectionPane = loader.load();
++        ConnectionController connectionController = loader.getController();
++
++        connectionController.getConnect().setOnAction(actionEvent -> {
++            Address address = new Address("akka", "ClusterSystem", connectionController.getHost().getText(),
++                    Integer.parseInt(connectionController.getPort().getText()));
++
++            Connection connection = new Connection(username, address, cluster.selfAddress());
++            clusterListener.tell(connection, ActorRef.noSender());
++        });
++
++        /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+         //console
+         TextArea logArea = new TextArea();
+         logArea.setEditable(true);
+ 
+         //list-view and buttons
+         ListView<String> membersView = new ListView<>(members);
+-//        Button selectPrivateChat = new Button("Приватный чат");
+-//        Button selectGroupChat = new Button("Общий чат");
+ 
+         //address of member for private chat
+         final String[] nameOfChat = {GROUP_CHAT_NAME};
+ 
+-        //list of members
+-//        TextArea membersArea = new TextArea();
+-//        membersArea.setPrefColumnCount(20);
+-//        membersArea.setEditable(true);
+-
+         //host select
+         TextField hostField = new TextField();
+ //        hostField.setPromptText("Введи адрес хоста");
+@@ -92,7 +98,7 @@
+         final String[] nickname = {""};
+ 
+         //button for connect
+-        Button button = new Button("Подключиться");
++//        Button button = new Button("Подключиться");
+ 
+         button.setOnAction(new EventHandler<ActionEvent>() {
+             @Override
+@@ -211,12 +217,12 @@
+             }
+         });
+ 
+-        VBox connectionPane = new VBox();
+-        connectionPane.getChildren().addAll(hostField, portField, nicknameField, button);
++        VBox vBox = new VBox();
++        vBox.getChildren().addAll(hostField, portField, nicknameField, button);
+ 
+         BorderPane mainPane = new BorderPane();
+         mainPane.setRight(membersView);
+-        mainPane.setTop(connectionPane);
++        mainPane.setTop(vBox);
+         mainPane.setCenter(logArea);
+         mainPane.setBottom(messageField);
+ 
+@@ -256,4 +262,12 @@
+         }
+         return sb.toString();
+     }
++
++    public static void main(String[] args) {
++        launch(args);
++    }
++
++    private void showConnectionWindow() {
++
++    }
+ }
+Index: src/main/java/ru/vladbakumenko/conroller/ChatUI.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/ru/vladbakumenko/conroller/ChatUI.java b/src/main/java/ru/vladbakumenko/conroller/ChatUI.java
+new file mode 100644
+--- /dev/null	(date 1682332185922)
++++ b/src/main/java/ru/vladbakumenko/conroller/ChatUI.java	(date 1682332185922)
+@@ -0,0 +1,21 @@
++package ru.vladbakumenko.conroller;
++
++import javafx.fxml.FXML;
++import javafx.scene.control.ListView;
++import javafx.scene.control.TextArea;
++import javafx.scene.control.TextField;
++import lombok.Data;
++
++@Data
++public class ChatUI {
++
++    @FXML
++    private ListView<?> listViewOfMembers;
++
++    @FXML
++    private TextArea logArea;
++
++    @FXML
++    private TextField messageField;
++
++}
+Index: src/main/resources/Connection.fxml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/resources/Connection.fxml b/src/main/resources/Connection.fxml
+new file mode 100644
+--- /dev/null	(date 1682331281875)
++++ b/src/main/resources/Connection.fxml	(date 1682331281875)
+@@ -0,0 +1,22 @@
++<?xml version="1.0" encoding="UTF-8"?>
++
++<?import javafx.scene.control.Button?>
++<?import javafx.scene.control.Label?>
++<?import javafx.scene.control.TextField?>
++<?import javafx.scene.layout.AnchorPane?>
++<?import javafx.scene.text.Font?>
++
++
++<AnchorPane prefHeight="300.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.vladbakumenko.conroller.ConnectionController">
++    <children>
++        <Label layoutX="119.0" layoutY="41.0" prefHeight="30.0" prefWidth="162.0" text="Connection menu">
++            <font>
++                <Font size="20.0" />
++            </font>
++        </Label>
++        <TextField layoutX="94.0" layoutY="91.0" prefHeight="25.0" prefWidth="212.0" promptText="Host" />
++        <TextField layoutX="94.0" layoutY="131.0" prefHeight="25.0" prefWidth="212.0" promptText="Port" />
++        <TextField layoutX="94.0" layoutY="170.0" prefHeight="25.0" prefWidth="212.0" promptText="Nickname" />
++        <Button layoutX="154.0" layoutY="222.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="93.0" text="Connect" />
++    </children>
++</AnchorPane>
+Index: src/main/resources/Chat.fxml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/resources/Chat.fxml b/src/main/resources/Chat.fxml
+new file mode 100644
+--- /dev/null	(date 1682331788844)
++++ b/src/main/resources/Chat.fxml	(date 1682331788844)
+@@ -0,0 +1,24 @@
++<?xml version="1.0" encoding="UTF-8"?>
++
++<?import javafx.scene.control.ListView?>
++<?import javafx.scene.control.TextArea?>
++<?import javafx.scene.control.TextField?>
++<?import javafx.scene.layout.AnchorPane?>
++<?import javafx.scene.layout.BorderPane?>
++
++
++<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.vladbakumenko.conroller.ChatUI">
++   <children>
++      <BorderPane prefHeight="400.0" prefWidth="600.0">
++         <right>
++            <ListView fx:id="listViewOfMembers" prefHeight="375.0" prefWidth="220.0" BorderPane.alignment="CENTER" />
++         </right>
++         <center>
++            <TextArea fx:id="logArea" prefHeight="375.0" prefWidth="370.0" BorderPane.alignment="CENTER" />
++         </center>
++         <bottom>
++            <TextField fx:id="messageField" promptText="Ваше сообщение" BorderPane.alignment="CENTER" />
++         </bottom>
++      </BorderPane>
++   </children>
++</AnchorPane>
+Index: src/main/java/ru/vladbakumenko/conroller/ConnectionController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/src/main/java/ru/vladbakumenko/conroller/ConnectionController.java b/src/main/java/ru/vladbakumenko/conroller/ConnectionController.java
+new file mode 100644
+--- /dev/null	(date 1682332185936)
++++ b/src/main/java/ru/vladbakumenko/conroller/ConnectionController.java	(date 1682332185936)
+@@ -0,0 +1,35 @@
++package ru.vladbakumenko.conroller;
++
++import javafx.fxml.FXML;
++import javafx.scene.control.Button;
++import javafx.scene.control.TextField;
++import lombok.Data;
++
++import java.net.URL;
++import java.util.ResourceBundle;
++
++@Data
++public class ConnectionController {
++    @FXML
++    private ResourceBundle resources;
++
++    @FXML
++    private URL location;
++
++    @FXML
++    private Button connect;
++
++    @FXML
++    private TextField host;
++
++    @FXML
++    private TextField nickname;
++
++    @FXML
++    private TextField port;
++
++    @FXML
++    void initialize() {
++
++    }
++}
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"87f008cf-9d51-4878-b2a9-7a5661316707\" name=\"Changes\" comment=\"\">\n      <change afterPath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/Test.java\" afterDir=\"false\" />\n      <change afterPath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChanelCompound.java\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChatMessage.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/GroupMessage.java\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/Connection.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/Connection.java\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/PrivateMessage.java\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/PrivateMessage.java\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/src/main/resources/application.conf\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/src/main/resources/application.conf\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"CodeStyleSettingsInfer\">\n    <option name=\"done\" value=\"true\" />\n  </component>\n  <component name=\"FileTemplateManagerImpl\">\n    <option name=\"RECENT_TEMPLATES\">\n      <list>\n        <option value=\"Enum\" />\n        <option value=\"Class\" />\n      </list>\n    </option>\n  </component>\n  <component name=\"Git.Settings\">\n    <branch-grouping />\n    <option name=\"RECENT_BRANCH_BY_REPOSITORY\">\n      <map>\n        <entry key=\"$PROJECT_DIR$\" value=\"add_private_chat_simple_way\" />\n      </map>\n    </option>\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n    <option name=\"UPDATE_TYPE\" value=\"REBASE\" />\n  </component>\n  <component name=\"GitRewordedCommitMessages\">\n    <option name=\"commitMessagesMapping\">\n      <RewordedCommitMessageMapping>\n        <option name=\"originalMessage\" value=\"added list view of members\" />\n        <option name=\"rewordedMessage\" value=\"added list view of members\" />\n      </RewordedCommitMessageMapping>\n    </option>\n    <option name=\"currentCommit\" value=\"1\" />\n    <option name=\"onto\" value=\"3773d2f11d37a4e6f8771c4913e7d97fadf0900a\" />\n  </component>\n  <component name=\"MarkdownSettingsMigration\">\n    <option name=\"stateVersion\" value=\"1\" />\n  </component>\n  <component name=\"ProjectCodeStyleSettingsMigration\">\n    <option name=\"version\" value=\"2\" />\n  </component>\n  <component name=\"ProjectId\" id=\"2N9ZisOnOxg7JzlQgjv7gizixzM\" />\n  <component name=\"ProjectLevelVcsManager\" settingsEditedManually=\"true\" />\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">{\n  &quot;keyToString&quot;: {\n    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\n    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,\n    &quot;WebServerToolWindowFactoryState&quot;: &quot;false&quot;,\n    &quot;last_opened_file_path&quot;: &quot;C:/Users/Влад/dev/P2PChat&quot;,\n    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,\n    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,\n    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,\n    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,\n    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pathVariables&quot;\n  }\n}</component>\n  <component name=\"RecentsManager\">\n    <key name=\"MoveFile.RECENT_KEYS\">\n      <recent name=\"C:\\Users\\Влад\\dev\\TestTaskP2PChat\\src\\main\\resources\" />\n    </key>\n  </component>\n  <component name=\"RunManager\" selected=\"Application.App\">\n    <configuration name=\"App\" type=\"Application\" factoryName=\"Application\" singleton=\"false\" temporary=\"true\" nameIsGenerated=\"true\">\n      <option name=\"MAIN_CLASS_NAME\" value=\"ru.vladbakumenko.App\" />\n      <module name=\"TestTaskP2PChat\" />\n      <option name=\"VM_PARAMETERS\" value=\"--module-path ${PATH_TO_FX} --add-modules javafx.controls,javafx.fxml\" />\n      <extension name=\"coverage\">\n        <pattern>\n          <option name=\"PATTERN\" value=\"ru.vladbakumenko.*\" />\n          <option name=\"ENABLED\" value=\"true\" />\n        </pattern>\n      </extension>\n      <method v=\"2\">\n        <option name=\"Make\" enabled=\"true\" />\n      </method>\n    </configuration>\n    <configuration name=\"Test\" type=\"Application\" factoryName=\"Application\" temporary=\"true\" nameIsGenerated=\"true\">\n      <option name=\"MAIN_CLASS_NAME\" value=\"ru.vladbakumenko.Test\" />\n      <module name=\"TestTaskP2PChat\" />\n      <extension name=\"coverage\">\n        <pattern>\n          <option name=\"PATTERN\" value=\"ru.vladbakumenko.*\" />\n          <option name=\"ENABLED\" value=\"true\" />\n        </pattern>\n      </extension>\n      <method v=\"2\">\n        <option name=\"Make\" enabled=\"true\" />\n      </method>\n    </configuration>\n    <recent_temporary>\n      <list>\n        <item itemvalue=\"Application.App\" />\n        <item itemvalue=\"Application.Test\" />\n        <item itemvalue=\"Application.App\" />\n        <item itemvalue=\"Application.App\" />\n        <item itemvalue=\"Application.App\" />\n      </list>\n    </recent_temporary>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"87f008cf-9d51-4878-b2a9-7a5661316707\" name=\"Changes\" comment=\"\" />\n      <created>1679078391506</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1679078391506</updated>\n      <workItem from=\"1679078393594\" duration=\"2914000\" />\n      <workItem from=\"1679125556120\" duration=\"1029000\" />\n      <workItem from=\"1679214900182\" duration=\"6927000\" />\n      <workItem from=\"1679298809649\" duration=\"6469000\" />\n      <workItem from=\"1679391895682\" duration=\"11247000\" />\n      <workItem from=\"1679479910488\" duration=\"769000\" />\n      <workItem from=\"1679484660656\" duration=\"3179000\" />\n      <workItem from=\"1679508253839\" duration=\"18177000\" />\n      <workItem from=\"1679755504097\" duration=\"1780000\" />\n      <workItem from=\"1679903813467\" duration=\"5682000\" />\n      <workItem from=\"1679912939270\" duration=\"2422000\" />\n      <workItem from=\"1679979965038\" duration=\"602000\" />\n      <workItem from=\"1680070053399\" duration=\"9674000\" />\n      <workItem from=\"1681250676047\" duration=\"3879000\" />\n      <workItem from=\"1681328041924\" duration=\"5174000\" />\n      <workItem from=\"1681372140354\" duration=\"11276000\" />\n      <workItem from=\"1681393196048\" duration=\"1477000\" />\n      <workItem from=\"1681467354127\" duration=\"683000\" />\n      <workItem from=\"1681560892519\" duration=\"8074000\" />\n      <workItem from=\"1681795932367\" duration=\"7000\" />\n      <workItem from=\"1681796267767\" duration=\"4000\" />\n      <workItem from=\"1681796368981\" duration=\"49795000\" />\n      <workItem from=\"1681907599730\" duration=\"24323000\" />\n    </task>\n    <servers />\n  </component>\n  <component name=\"TypeScriptGeneratedFilesManager\">\n    <option name=\"version\" value=\"3\" />\n  </component>\n  <component name=\"UnknownFeatures\">\n    <option featureType=\"com.intellij.fileTypeFactory\" implementationName=\"*.conf\" />\n  </component>\n  <component name=\"Vcs.Log.Tabs.Properties\">\n    <option name=\"TAB_STATES\">\n      <map>\n        <entry key=\"MAIN\">\n          <value>\n            <State>\n              <option name=\"CUSTOM_BOOLEAN_PROPERTIES\">\n                <map>\n                  <entry key=\"Show.Git.Branches\" value=\"true\" />\n                </map>\n              </option>\n              <option name=\"FILTERS\">\n                <map>\n                  <entry key=\"branch\">\n                    <value>\n                      <list>\n                        <option value=\"add_private_chat_simple_way\" />\n                      </list>\n                    </value>\n                  </entry>\n                </map>\n              </option>\n            </State>\n          </value>\n        </entry>\n      </map>\n    </option>\n  </component>\n  <component name=\"XDebuggerManager\">\n    <breakpoint-manager>\n      <breakpoints>\n        <line-breakpoint enabled=\"true\" type=\"java-line\">\n          <url>file://$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java</url>\n          <line>33</line>\n          <option name=\"timeStamp\" value=\"65\" />\n        </line-breakpoint>\n      </breakpoints>\n    </breakpoint-manager>\n  </component>\n  <component name=\"XSLT-Support.FileAssociations.UIState\">\n    <expand />\n    <select />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 14ca55f57d24839f6ddfb216a33273b141120edf)
++++ b/.idea/workspace.xml	(date 1682331442220)
+@@ -5,16 +5,12 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="87f008cf-9d51-4878-b2a9-7a5661316707" name="Changes" comment="">
+-      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/Test.java" afterDir="false" />
+-      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChanelCompound.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/conroller/ChatUI.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/conroller/ConnectionController.java" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/main/resources/Chat.fxml" afterDir="false" />
++      <change afterPath="$PROJECT_DIR$/src/main/resources/Connection.fxml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChatMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/GroupMessage.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/Connection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/Connection.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/PrivateMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/PrivateMessage.java" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.conf" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+     <option name="HIGHLIGHT_CONFLICTS" value="true" />
+@@ -29,6 +25,7 @@
+       <list>
+         <option value="Enum" />
+         <option value="Class" />
++        <option value="FxmlFile" />
+       </list>
+     </option>
+   </component>
+@@ -80,6 +77,7 @@
+ }</component>
+   <component name="RecentsManager">
+     <key name="MoveFile.RECENT_KEYS">
++      <recent name="C:\Users\Влад\dev\TestTaskP2PChatOnAkkaCluster\src\main\resources" />
+       <recent name="C:\Users\Влад\dev\TestTaskP2PChat\src\main\resources" />
+     </key>
+   </component>
