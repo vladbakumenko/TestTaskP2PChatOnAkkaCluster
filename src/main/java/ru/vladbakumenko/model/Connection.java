@@ -26,4 +26,13 @@ public class Connection implements Serializable {
     public int hashCode() {
         return Objects.hash(name, connectionAddress, userAddress);
     }
+
+    @Override
+    public String toString() {
+        return "Connection{" +
+                "name='" + name + '\'' +
+                ", connectionAddress=" + connectionAddress +
+                ", userAddress=" + userAddress +
+                '}';
+    }
 }

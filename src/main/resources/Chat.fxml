@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+
+<AnchorPane prefHeight="500.0" prefWidth="650.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.vladbakumenko.controller.ChatController">
+    <children>
+        <BorderPane prefHeight="500.0" prefWidth="650.0">
+            <right>
+                <ListView fx:id="listViewOfMembers" prefHeight="375.0" prefWidth="220.0" BorderPane.alignment="CENTER" />
+            </right>
+            <center>
+                <TextArea fx:id="logArea" prefHeight="375.0" prefWidth="370.0" BorderPane.alignment="CENTER" />
+            </center>
+            <bottom>
+                <TextField fx:id="messageField" promptText="Ваше сообщение" BorderPane.alignment="CENTER"
+                           onKeyPressed="#enterKeyPressed"/>
+            </bottom>
+        </BorderPane>
+    </children>
+</AnchorPane>

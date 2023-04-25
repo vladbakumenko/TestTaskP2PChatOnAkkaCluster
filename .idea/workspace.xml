@@ -5,16 +5,17 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="87f008cf-9d51-4878-b2a9-7a5661316707" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/Test.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChanelCompound.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/controller/ChatController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/controller/ConnectionController.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChatUiModel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ConnectionUiModel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/Chat.fxml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/Connection.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/App.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/ChatMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/GroupMessage.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/Connection.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/Connection.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/PrivateMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/ru/vladbakumenko/model/PrivateMessage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.conf" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.conf" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -28,6 +29,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="Enum" />
+        <option value="FxmlFile" />
         <option value="Class" />
       </list>
     </option>
@@ -36,7 +38,7 @@
     <branch-grouping />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="add_private_chat_simple_way" />
+        <entry key="$PROJECT_DIR$" value="add_private_chat_changing_history" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -80,6 +82,8 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Влад\dev\TestTaskP2PChatOnAkkaCluster\src\main\resources" />
+      <recent name="C:\Users\Влад\dev\TestTaskP2PChatOnAkkaCluster\src\main\java\ru\vladbakumenko" />
       <recent name="C:\Users\Влад\dev\TestTaskP2PChat\src\main\resources" />
     </key>
   </component>
@@ -153,6 +157,14 @@
       <workItem from="1681796368981" duration="49795000" />
       <workItem from="1681907599730" duration="24323000" />
     </task>
+    <task id="LOCAL-00001">
+      <created>1682332511341</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1682332511341</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -189,13 +201,16 @@
       </map>
     </option>
   </component>
+  <component name="VcsManagerConfiguration">
+    <option name="LAST_COMMIT_MESSAGE" value="" />
+  </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/src/main/java/ru/vladbakumenko/actors/ClusterManager.java</url>
-          <line>33</line>
-          <option name="timeStamp" value="65" />
+          <url>file://$PROJECT_DIR$/src/main/java/ru/vladbakumenko/controller/ChatController.java</url>
+          <line>172</line>
+          <option name="timeStamp" value="87" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

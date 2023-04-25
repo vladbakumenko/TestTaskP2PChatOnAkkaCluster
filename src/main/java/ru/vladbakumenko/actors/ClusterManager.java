@@ -4,6 +4,7 @@ import akka.actor.AbstractActor;
 import akka.actor.Props;
 import javafx.application.Platform;
 import ru.vladbakumenko.App;
+import ru.vladbakumenko.controller.ChatController;
 import ru.vladbakumenko.model.ChatMembers;
 import ru.vladbakumenko.model.GroupMessage;
 import ru.vladbakumenko.model.Connection;
@@ -15,15 +16,15 @@ import java.util.Set;
 
 public class ClusterManager extends AbstractActor {
 
-    private List<GroupMessage> groupMessages;
-    private List<PrivateMessage> privateMessages;
-    private List<String> members;
+    private ChatController controller;
     private Set<String> currentMembers = new HashSet<>();
 
-    public ClusterManager(List<GroupMessage> groupMessages, List<PrivateMessage> privateMessages, List<String> members) {
-        this.groupMessages = groupMessages;
-        this.privateMessages = privateMessages;
-        this.members = members;
+    public ClusterManager(ChatController controller) {
+        this.controller = controller;
+    }
+
+    public static Props getProps(ChatController controller) {
+        return Props.create(ClusterManager.class, controller);
     }
 
     @Override
@@ -34,7 +35,7 @@ public class ClusterManager extends AbstractActor {
                             Platform.runLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    privateMessages.add(message);
+                                    controller.getPrivateMessages().add(message);
                                 }
                             });
                         }
@@ -44,7 +45,7 @@ public class ClusterManager extends AbstractActor {
                             Platform.runLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    groupMessages.add(message);
+                                    controller.getGroupMessages().add(message);
                                 }
                             });
                         }
@@ -56,16 +57,12 @@ public class ClusterManager extends AbstractActor {
                             Platform.runLater(new Runnable() {
                                 @Override
                                 public void run() {
-                                    members.clear();
-                                    members.add(App.GROUP_CHAT_NAME);
-                                    members.addAll(currentMembers);
+                                    controller.getMembers().clear();
+                                    controller.getMembers().add(App.GROUP_CHAT_NAME);
+                                    controller.getMembers().addAll(currentMembers);
                                 }
                             });
                         })
                 .build();
-    }
-
-    public static Props getProps(List<GroupMessage> groupMessages, List<PrivateMessage> privateMessages, List<String> members) {
-        return Props.create(ClusterManager.class, groupMessages, privateMessages, members);
     }
 }
